@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My eFootball League</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; }
+    header { background: #7b0101; color: white; padding: 20px; }
+    main { padding: 20px; }
+    table { border-collapse: collapse; background: white; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>eFootball Friends League Season 1</h1>
+  </header>
+  <main>
+    <h2>Standings</h2>
+    <table id="standings"></table>
+    <h2>Fixtures</h2>
+    <div id="fixtures"></div>
+    <h2>Playoffs</h2>
+    <div id="playoffs"></div>
+  </main>
+  <script>
+  // 1. DATA: our teams (an array of names)
+  const teams = {
+  T1: "Chelsea",
+  T2: "Manchester United",
+  T3: "AC Milan",
+  T4: "Inter Milan",
+  T5: "Bayern Munich",
+  T6: "Barcelona",
+  T7: "Arsenal",
+  T8: "Manchester City",
+  T9: "Melbourne City",
+  T10: "Liverpool"
+};
+
+  // 2. DATA: finished matches (an array of objects)
+  // scores typed by the user, saved in this browser
+let results = JSON.parse(localStorage.getItem("results")) || {};
+
+function saveScore(id, side, value) {
+  if (!results[id]) { results[id] = { h: "", a: "" }; }
+  results[id][side] = value;
+  localStorage.setItem("results", JSON.stringify(results));
+  showStandings();
+  showPlayoffs();
+}
+
+// turn typed scores into a list of finished matches
+function getPlayedMatches() {
+  const played = [];
+  buildFixtures().flat().forEach(function (m) {
+    const r = results[m.id];
+    if (r && r.h !== "" && r.a !== "") {
+      played.push({ home: m.home, away: m.away, homeGoals: Number(r.h), awayGoals: Number(r.a) });
+    }
+  });
+  return played;
+}
+
+  // 3. FUNCTION: work out the standings from the matches
+  function buildStandings() {
+        const table = Object.keys(teams).map(function (code) {
+      return { code: code, name: teams[code], played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0 };
+    });
+
+    function find(code) {
+      return table.find(function (row) { return row.code === code; });
+    }
+
+    for (const m of getPlayedMatches()) {
+      const home = find(m.home);
+      const away = find(m.away);
+      home.played++;  away.played++;
+      home.gf += m.homeGoals;  home.ga += m.awayGoals;
+      away.gf += m.awayGoals;  away.ga += m.homeGoals;
+
+      if (m.homeGoals > m.awayGoals) { home.won++; away.lost++; home.points += 3; }
+      else if (m.homeGoals < m.awayGoals) { away.won++; home.lost++; away.points += 3; }
+      else { home.drawn++; away.drawn++; home.points += 1; away.points += 1; }
+    }
+
+    // sort: most points first, then goal difference, then goals scored
+    table.sort(function (a, b) {
+      return b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf;
+    });
+    return table;
+  }
+
+  // 4. FUNCTION: draw the table on the page
+  function showStandings() {
+    let html = "<tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>";
+    const rows = buildStandings();
+    rows.forEach(function (r, i) {
+      html += "<tr><td>" + (i + 1) + "</td><td>" + r.name + "</td><td>" + r.played +
+              "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost +
+              "</td><td>" + (r.gf - r.ga) + "</td><td><b>" + r.points + "</b></td></tr>";
+    });
+    document.getElementById("standings").innerHTML = html;
+  }
+
+  // 5. RUN IT
+  function buildFixtures() {
+  const codes = Object.keys(teams);
+  let order = codes.slice();
+  const firstLeg = [];
+
+  for (let r = 0; r < 9; r++) {
+    const round = [];
+    for (let i = 0; i < 5; i++) {
+      let home = order[i];
+      let away = order[9 - i];
+      if ((r + i) % 2 === 1) {
+        const temp = home; home = away; away = temp;
+      }
+      round.push({ id: "R" + (r + 1) + "-" + (i + 1), home: home, away: away });
+    }
+    firstLeg.push(round);
+    order = [order[0], order[9]].concat(order.slice(1, 9));
+  }
+
+  const secondLeg = firstLeg.map(function (round, r) {
+    return round.map(function (m, i) {
+      return { id: "R" + (r + 10) + "-" + (i + 1), home: m.away, away: m.home };
+    });
+  });
+
+  return firstLeg.concat(secondLeg);
+}
+  function showFixtures() {
+  const rounds = buildFixtures();
+  let html = "";
+  rounds.forEach(function (round, i) {
+    html += "<h3>Round " + (i + 1) + "</h3>";
+    round.forEach(function (m) {
+      const r = results[m.id] || { h: "", a: "" };
+      html += "<div style='margin:6px 0'>" + teams[m.home] +
+        " <input type='number' min='0' style='width:50px' value='" + r.h + "' onchange=\"saveScore('" + m.id + "','h',this.value)\">" +
+        " - " +
+        "<input type='number' min='0' style='width:50px' value='" + r.a + "' onchange=\"saveScore('" + m.id + "','a',this.value)\">" +
+        " " + teams[m.away] + "</div>";
+    });
+  });
+  document.getElementById("fixtures").innerHTML = html;
+}
+  // saved playoff winners
+let playoffWinners = {};
+try { playoffWinners = JSON.parse(localStorage.getItem("playoffs")) || {}; } catch (e) { playoffWinners = {}; }
+
+function pickWinner(stage, code) {
+  playoffWinners[stage] = code;
+  localStorage.setItem("playoffs", JSON.stringify(playoffWinners));
+  showPlayoffs();
+}
+
+// a saved winner only counts if that team is really in this match
+function validWinner(stage, a, b) {
+  const w = playoffWinners[stage];
+  return (a && b && (w === a || w === b)) ? w : null;
+}
+
+// one match box
+function matchCard(stage, title, note, a, b) {
+  let html = "<div style='background:white;border:1px solid #ddd;padding:12px;margin:10px 0;max-width:320px'>";
+  html += "<b>" + title + "</b><br><small>" + note + "</small><br>";
+  html += (a ? teams[a] : "TBD") + " vs " + (b ? teams[b] : "TBD") + "<br>";
+  if (a && b) {
+    html += "<select onchange=\"pickWinner('" + stage + "', this.value)\">";
+    html += "<option value=''>Winner...</option>";
+    html += "<option value='" + a + "'" + (playoffWinners[stage] === a ? " selected" : "") + ">" + teams[a] + "</option>";
+    html += "<option value='" + b + "'" + (playoffWinners[stage] === b ? " selected" : "") + ">" + teams[b] + "</option>";
+    html += "</select>";
+  }
+  return html + "</div>";
+}
+
+function showPlayoffs() {
+  const table = buildStandings();
+  const done = table.every(function (r) { return r.played === 18; });
+  const top = table.slice(0, 4).map(function (r) { return r.code; });
+  const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3];
+
+  const q1Winner = validWinner("q1", t1, t2);
+  const q1Loser = q1Winner ? (q1Winner === t1 ? t2 : t1) : null;
+  const elWinner = validWinner("el", t3, t4);
+  const q2Winner = validWinner("q2", q1Loser, elWinner);
+  const champion = validWinner("f", q1Winner, q2Winner);
+
+  let html = "";
+  if (done) {
+    html += "<p>League stage complete. 🛡️ <b>League Shield: " + teams[t1] + "</b></p>";
+  } else {
+    html += "<p><i>Provisional: based on the current top 4. Final after all 18 rounds.</i></p>";
+  }
+  html += matchCard("q1", "Qualifier 1", "1st vs 2nd. Winner goes to the Final", t1, t2);
+  html += matchCard("el", "Eliminator", "3rd vs 4th. Loser is out", t3, t4);
+  html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator", q1Loser, elWinner);
+  html += matchCard("f", "Final", "Winner of Q1 vs winner of Q2", q1Winner, q2Winner);
+  if (champion) { html += "<h2>🏆 Champions: " + teams[champion] + "</h2>"; }
+  document.getElementById("playoffs").innerHTML = html;
+}
+
+  showStandings();
+  showFixtures();
+  showPlayoffs();
+  
+</script>
+</body>
+</html>
