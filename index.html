@@ -5,92 +5,77 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>eFootball Friends League Season 1</title>
 
-<!-- FONTS from Google (needs internet) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-  /* ===== COLOURS: change these to restyle the whole site ===== */
-  :root {
-    --bg: #0b1220;
-    --card: #131c2e;
-    --line: #243049;
-    --text: #e8edf5;
-    --muted: #94a3b8;
-    --accent: #2ecc88;
-    --gold: #febb04;
-    --red: #bb0303;
-  }
+  :root { --bg:#0b1220; --card:#131c2e; --line:#243049; --text:#e8edf5; --muted:#94a3b8;
+          --accent:#2ecc88; --gold:#f5b301; --red:#ef4444; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font-family: "Inter", system-ui, Arial, sans-serif; line-height: 1.5; }
-  h1, h2, h3, nav button, .rounds button { font-family: "Oswald", "Inter", sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:"Inter",system-ui,Arial,sans-serif; line-height:1.5; }
+  h1,h2,h3,nav button,.rounds button { font-family:"Oswald","Inter",sans-serif; }
 
-  /* ===== HEADER ===== */
-  header { background: linear-gradient(135deg, #5a0000, #7b0101 45%, #0b1220);
-           padding: 28px 16px 22px; border-bottom: 1px solid var(--line); }
-  .wrap { max-width: 980px; margin: 0 auto; }
-  header h1 { margin: 0; font-size: 32px; letter-spacing: 1px; text-transform: uppercase; }
-  header p { margin: 6px 0 0; color: #f1d6d6; font-size: 14px; }
+  header { background:linear-gradient(135deg,#5a0000,#7b0101 45%,#0b1220); padding:28px 16px 22px; border-bottom:1px solid var(--line); }
+  .wrap { max-width:980px; margin:0 auto; }
+  header h1 { margin:0; font-size:32px; letter-spacing:1px; text-transform:uppercase; }
+  header p { margin:6px 0 0; color:#f1d6d6; font-size:14px; }
 
-  /* ===== TABS ===== */
-  nav { position: sticky; top: 0; z-index: 10; background: var(--card);
-        border-bottom: 1px solid var(--line); display: flex; overflow-x: auto; padding: 0 8px; }
-  nav button { background: none; border: 0; color: var(--muted); font-size: 16px; letter-spacing: .5px;
-               padding: 14px 18px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
-  nav button:hover { color: var(--text); }
-  nav button.on { color: var(--accent); border-bottom-color: var(--accent); }
+  nav { position:sticky; top:0; z-index:10; background:var(--card); border-bottom:1px solid var(--line); display:flex; overflow-x:auto; padding:0 8px; }
+  nav button { background:none; border:0; color:var(--muted); font-size:16px; letter-spacing:.5px; padding:14px 18px; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; }
+  nav button:hover { color:var(--text); }
+  nav button.on { color:var(--accent); border-bottom-color:var(--accent); }
+  main { padding:18px 14px 40px; }
 
-  main { padding: 18px 14px 40px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+  .card h2,.card h3 { margin:0 0 10px; }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:520px; }
+  th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.6px; }
+  th,td { padding:10px 8px; text-align:center; border-bottom:1px solid var(--line); }
+  th.left,td.left { text-align:left; }
+  tr.top4 td:first-child { box-shadow:inset 4px 0 0 var(--accent); }
+  tr.top4 { background:rgba(46,204,136,.08); }
+  td.pts { font-weight:800; font-size:16px; }
+  .badge { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#1e2a44; color:var(--accent); font-size:11px; font-weight:800; margin-right:8px; vertical-align:middle; }
+  .form span { display:inline-block; width:20px; height:20px; line-height:20px; border-radius:4px; font-size:11px; font-weight:700; margin-right:2px; color:#fff; }
+  .W { background:#16a34a; } .D { background:#6b7280; } .L { background:var(--red); }
+  .legend { color:var(--muted); font-size:13px; margin:4px 2px; }
 
-  /* ===== CARDS AND TABLES ===== */
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-          padding: 16px; margin-bottom: 16px; }
-  .card h2, .card h3 { margin: 0 0 10px; }
-  .scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 520px; }
-  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
-  th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); }
-  th.left, td.left { text-align: left; }
-  tr.top4 td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
-  tr.top4 { background: rgba(46, 204, 136, .08); }
-  td.pts { font-weight: 800; font-size: 16px; }
-  .badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
-           border-radius: 50%; background: #1e2a44; color: var(--accent); font-size: 11px;
-           font-weight: 800; margin-right: 8px; vertical-align: middle; }
-  .form span { display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 4px;
-               font-size: 11px; font-weight: 700; margin-right: 2px; color: #fff; }
-  .W { background: #16a34a; } .D { background: #6b7280; } .L { background: var(--red); }
-  .legend { color: var(--muted); font-size: 13px; margin: 4px 2px; }
+  .rounds { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .rounds button { background:var(--card); border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 11px; cursor:pointer; font-size:14px; }
+  .rounds button.on { background:var(--accent); color:#05281a; border-color:var(--accent); font-weight:700; }
+  .match { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .match .h { text-align:right; } .match .a { text-align:left; }
+  .score { min-width:70px; text-align:center; font-weight:800; font-size:18px; }
+  input { font:inherit; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:8px; }
+  .match input { width:46px; text-align:center; font-weight:700; padding:7px 4px; }
 
-  /* ===== FIXTURES ===== */
-  .rounds { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-  .rounds button { background: var(--card); border: 1px solid var(--line); color: var(--muted);
-                   border-radius: 8px; padding: 6px 11px; cursor: pointer; font-size: 14px; }
-  .rounds button.on { background: var(--accent); color: #05281a; border-color: var(--accent); font-weight: 700; }
-  .match { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
-           padding: 12px 0; border-bottom: 1px solid var(--line); }
-  .match .h { text-align: right; } .match .a { text-align: left; }
-  .match input { width: 46px; text-align: center; font: inherit; font-weight: 700; padding: 7px 4px;
-                 background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; }
+  .po { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .pocard { background:var(--card); border:1px solid var(--line); border-left-width:6px; border-radius:14px; padding:14px; }
+  .pocard small { color:var(--muted); display:block; margin-bottom:8px; }
+  .pocard .vs { font-weight:600; margin-bottom:10px; }
+  select { font:inherit; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:7px; width:100%; }
+  .champ { text-align:center; font-size:22px; font-weight:800; color:var(--gold); background:rgba(245,179,1,.1); border:1px solid var(--gold); border-radius:14px; padding:20px; margin-top:16px; }
+  .shield { background:rgba(245,179,1,.1); border:1px solid var(--gold); color:var(--gold); border-radius:12px; padding:12px 16px; margin-bottom:14px; font-weight:700; }
 
-  /* ===== PLAYOFFS ===== */
-  .po { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-  .pocard { background: var(--card); border: 1px solid var(--line); border-left-width: 6px;
-            border-radius: 14px; padding: 14px; }
-  .pocard small { color: var(--muted); display: block; margin-bottom: 8px; }
-  .pocard .vs { font-weight: 600; margin-bottom: 10px; }
-  select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
-           border-radius: 8px; padding: 7px; width: 100%; }
-  .champ { text-align: center; font-size: 22px; font-weight: 800; color: var(--gold);
-           background: rgba(245, 179, 1, .1); border: 1px solid var(--gold);
-           border-radius: 14px; padding: 20px; margin-top: 16px; }
-  .shield { background: rgba(245, 179, 1, .1); border: 1px solid var(--gold); color: var(--gold);
-            border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-weight: 700; }
-
-  li { margin-bottom: 8px; }
-  @media (max-width: 520px) { header h1 { font-size: 24px; } .match { font-size: 14px; } }
+  .login input { display:block; width:100%; max-width:320px; margin-bottom:10px; }
+  .btn { background:var(--accent); color:#05281a; border:0; border-radius:8px; padding:10px 18px; font:inherit; font-weight:700; cursor:pointer; }
+  .btn.out { background:none; border:1px solid var(--line); color:var(--text); }
+  .status { color:var(--gold); font-size:13px; margin:0 0 10px; min-height:18px; }
+    .sq { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; }
+  .sq .card { margin:0; }
+  .sq label { display:block; margin:10px 0 4px; }
+  .sq input, .sq textarea { width:100%; }
+  textarea { font:inherit; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:8px; }
+  .owner { color:var(--muted); margin:0 0 10px; }
+  .plist { margin:0; padding-left:22px; columns:2; font-size:14px; }
+  .plist li { margin-bottom:3px; }
+  li { margin-bottom:8px; }
+  @media (max-width:520px) { header h1 { font-size:24px; } .match { font-size:14px; } }
 </style>
 </head>
 <body>
@@ -103,27 +88,50 @@
 </header>
 
 <nav id="nav"></nav>
-<main><div class="wrap" id="app"></div></main>
+<main><div class="wrap"><p class="status" id="status"></p><div id="app"></div></div></main>
 
 <script>
+  // =============== CONNECTION ===============
+  const SUPABASE_URL = "https://fzygrjvkjwfpjzmkauan.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_unDth4ipGBL5Q6KQk5a_Cw_9RxZwT9J";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   // =============== DATA ===============
   const teams = {
-    T1: "Chelsea", T2: "Manchester United", T3: "AC Milan", T4: "Inter Milan", T5: "Bayern Munich",
-    T6: "Barcelona", T7: "Arsenel", T8: "Manchester City", T9: "Melbourne City", T10: "Liverpool"
+    T1: "Chelsea", T2: "Manchester United", T3: "AC Milan", T4: "Inter Milan", T5: "Borussia Dortmund",
+    T6: "Barcelona", T7: "Arsenal", T8: "Manchester City", T9: "Melbourne City", T10: "Liverpool"
   };
 
-  let results = {};
-  try { results = JSON.parse(localStorage.getItem("results")) || {}; } catch (e) { results = {}; }
-  let playoffWinners = {};
-  try { playoffWinners = JSON.parse(localStorage.getItem("playoffs")) || {}; } catch (e) { playoffWinners = {}; }
+  let results = {};          // filled from the database
+  let playoffWinners = {};   // filled from the database
+  let squads = {};           // filled from the database
+  let isAdmin = false;
 
-  const tabs = ["Standings", "Fixtures", "Playoffs", "Rules"];
+  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
+
+  function setStatus(text) { document.getElementById("status").textContent = text || ""; }
 
   function initials(name) {
     const w = name.split(" ");
     return (w.length > 1 ? w[0][0] + w[1][0] : name.slice(0, 3)).toUpperCase();
+  }
+
+  // =============== LOAD FROM DATABASE ===============
+  async function loadData() {
+    const r = await sb.from("results").select("*");
+    const p = await sb.from("playoffs").select("*");
+    const s = await sb.from("squads").select("*");
+    if (r.error || p.error || s.error) { setStatus("Could not load data. Check your internet and refresh."); return; }
+    setStatus("");
+    results = {};
+    r.data.forEach(function (row) { results[row.id] = { h: row.home_goals, a: row.away_goals }; });
+    playoffWinners = {};
+    p.data.forEach(function (row) { playoffWinners[row.stage] = row.winner; });
+    squads = {};
+    s.data.forEach(function (row) { squads[row.team] = { owner: row.owner || "", players: row.players || "" }; });
+    render();
   }
 
   // =============== FIXTURES (circle method) ===============
@@ -154,7 +162,7 @@
     const played = [];
     buildFixtures().flat().forEach(function (m) {
       const r = results[m.id];
-      if (r && r.h !== "" && r.a !== "") {
+      if (r && r.h !== "" && r.a !== "" && r.h !== null && r.a !== null) {
         played.push({ home: m.home, away: m.away, homeGoals: Number(r.h), awayGoals: Number(r.a) });
       }
     });
@@ -182,16 +190,52 @@
     return table;
   }
 
-  // =============== SAVING ===============
-  function saveScore(id, side, value) {
-    if (!results[id]) { results[id] = { h: "", a: "" }; }
-    results[id][side] = value;
-    localStorage.setItem("results", JSON.stringify(results));
+  // =============== SAVING (admin only; the database also enforces this) ===============
+  async function saveScore(id) {
+    if (!isAdmin) return;
+    const h = document.getElementById("h-" + id).value;
+    const a = document.getElementById("a-" + id).value;
+    results[id] = { h: h, a: a };
+    if (h === "" && a === "") {
+      const res = await sb.from("results").delete().eq("id", id);
+      delete results[id];
+      if (res.error) { setStatus("Could not delete: " + res.error.message); }
+    } else if (h !== "" && a !== "") {
+      const res = await sb.from("results").upsert({ id: id, home_goals: Number(h), away_goals: Number(a) });
+      setStatus(res.error ? "Could not save: " + res.error.message : "");
+    }
     render();
   }
-  function pickWinner(stage, code) {
-    playoffWinners[stage] = code;
-    localStorage.setItem("playoffs", JSON.stringify(playoffWinners));
+
+  async function pickWinner(stage, code) {
+    if (!isAdmin) return;
+    let res;
+    if (code === "") {
+      delete playoffWinners[stage];
+      res = await sb.from("playoffs").delete().eq("stage", stage);
+    } else {
+      playoffWinners[stage] = code;
+      res = await sb.from("playoffs").upsert({ stage: stage, winner: code });
+    }
+    setStatus(res.error ? "Could not save: " + res.error.message : "");
+    render();
+  }
+
+  // =============== LOGIN ===============
+  async function login() {
+    const email = document.getElementById("em").value.trim();
+    const password = document.getElementById("pw").value;
+    const res = await sb.auth.signInWithPassword({ email: email, password: password });
+    if (res.error) { setStatus("Login failed: " + res.error.message); return; }
+    isAdmin = true;
+    setStatus("");
+    currentTab = "Fixtures";
+    render();
+  }
+  async function logout() {
+    await sb.auth.signOut();
+    isAdmin = false;
+    currentTab = "Standings";
     render();
   }
 
@@ -225,10 +269,15 @@
             (currentRound < 9 ? "First leg" : "Second leg") + "</span></h3>";
     rounds[currentRound].forEach(function (m) {
       const r = results[m.id] || { h: "", a: "" };
-      html += "<div class='match'><span class='h'>" + teams[m.home] + "</span><span>" +
-        "<input type='number' min='0' value='" + r.h + "' onchange=\"saveScore('" + m.id + "','h',this.value)\"> : " +
-        "<input type='number' min='0' value='" + r.a + "' onchange=\"saveScore('" + m.id + "','a',this.value)\">" +
-        "</span><span class='a'>" + teams[m.away] + "</span></div>";
+      const h = (r.h === null) ? "" : r.h, a = (r.a === null) ? "" : r.a;
+      let middle;
+      if (isAdmin) {
+        middle = "<input id='h-" + m.id + "' type='number' min='0' value='" + h + "' onchange=\"saveScore('" + m.id + "')\"> : " +
+                 "<input id='a-" + m.id + "' type='number' min='0' value='" + a + "' onchange=\"saveScore('" + m.id + "')\">";
+      } else {
+        middle = "<span class='score'>" + ((h !== "" && a !== "") ? h + " : " + a : "vs") + "</span>";
+      }
+      html += "<div class='match'><span class='h'>" + teams[m.home] + "</span><span>" + middle + "</span><span class='a'>" + teams[m.away] + "</span></div>";
     });
     return html + "</div>";
   }
@@ -243,9 +292,14 @@
     html += "<b style='color:" + color + "'>" + title + "</b><small>" + note + "</small>";
     html += "<div class='vs'>" + (a ? teams[a] : "TBD") + " <span style='color:var(--muted)'>vs</span> " + (b ? teams[b] : "TBD") + "</div>";
     if (a && b) {
-      html += "<select onchange=\"pickWinner('" + stage + "', this.value)\"><option value=''>Pick winner...</option>" +
-        "<option value='" + a + "'" + (playoffWinners[stage] === a ? " selected" : "") + ">" + teams[a] + "</option>" +
-        "<option value='" + b + "'" + (playoffWinners[stage] === b ? " selected" : "") + ">" + teams[b] + "</option></select>";
+      if (isAdmin) {
+        html += "<select onchange=\"pickWinner('" + stage + "', this.value)\"><option value=''>Pick winner...</option>" +
+          "<option value='" + a + "'" + (playoffWinners[stage] === a ? " selected" : "") + ">" + teams[a] + "</option>" +
+          "<option value='" + b + "'" + (playoffWinners[stage] === b ? " selected" : "") + ">" + teams[b] + "</option></select>";
+      } else {
+        const w = validWinner(stage, a, b);
+        html += "<div>" + (w ? "Winner: <b>" + teams[w] + "</b>" : "<span style='color:var(--muted)'>Not played yet</span>") + "</div>";
+      }
     }
     return html + "</div>";
   }
@@ -271,6 +325,50 @@
     if (champion) { html += "<div class='champ'>🏆 Champions: " + teams[champion] + "</div>"; }
     return html;
   }
+  function esc(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function playerList(text) {
+    return text.split("\n").map(function (x) { return x.trim(); }).filter(function (x) { return x !== ""; });
+  }
+
+  async function saveSquad(code) {
+    if (!isAdmin) return;
+    const owner = document.getElementById("own-" + code).value.trim();
+    const players = document.getElementById("pl-" + code).value;
+    const count = playerList(players).length;
+    const res = await sb.from("squads").upsert({ team: code, owner: owner, players: players });
+    if (res.error) { setStatus("Could not save: " + res.error.message); return; }
+    squads[code] = { owner: owner, players: players };
+    setStatus(teams[code] + " saved. " + ((count < 23 || count > 25) ? "Note: squad has " + count + " players (expected 23 to 25)." : count + " players."));
+    render();
+  }
+
+  function pageSquads() {
+    let html = "<p class='legend'>Team owners and squads (23 to 25 players each).</p><div class='sq'>";
+    Object.keys(teams).forEach(function (code) {
+      const s = squads[code] || { owner: "", players: "" };
+      const list = playerList(s.players);
+      html += "<div class='card'><h3><span class='badge'>" + initials(teams[code]) + "</span>" + teams[code] + "</h3>";
+      if (isAdmin) {
+        html += "<label class='legend'>Owner name</label><input id='own-" + code + "' value=\"" + esc(s.owner) + "\">" +
+                "<label class='legend'>Players (one per line, " + list.length + " now)</label>" +
+                "<textarea id='pl-" + code + "' rows='12'>" + esc(s.players) + "</textarea>" +
+                "<p><button class='btn' onclick=\"saveSquad('" + code + "')\">Save squad</button></p>";
+      } else {
+        html += "<p class='owner'>Owner: <b style='color:var(--text)'>" + (s.owner ? esc(s.owner) : "TBA") + "</b></p>";
+        if (list.length) {
+          html += "<p class='legend'>" + list.length + " players</p><ol class='plist'>" +
+                  list.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol>";
+        } else {
+          html += "<p class='legend'>Squad not added yet.</p>";
+        }
+      }
+      html += "</div>";
+    });
+    return html + "</div>";
+  }
 
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
@@ -280,20 +378,44 @@
       "<li><b>Ranking:</b> Points, then goal difference, then goals scored.</li>" +
       "<li><b>League Shield:</b> The team in 1st place after the league stage wins the shield.</li>" +
       "<li><b>Playoffs (IPL format):</b> Top 4 qualify. Qualifier 1: 1st vs 2nd (winner to the Final). Eliminator: 3rd vs 4th (loser out). Qualifier 2: loser of Q1 vs winner of the Eliminator. Final: winner of Q1 vs winner of Q2.</li>" +
-      "<li><b>Results:</b> Both players confirm the score after full time and share a screenshot in the group chat.</li>" +
+      "<li><b>Results:</b> Both players confirm the score after full time and share a screenshot in the group chat. The admin enters the result on this site.</li>" +
       "<li><b>Disputes:</b> The league admin's decision is final.</li></ol></div>";
+  }
+
+  function pageAdmin() {
+    if (isAdmin) {
+      return "<div class='card'><h2>Admin</h2><p>You are logged in. Enter scores in <b>Fixtures</b> and pick winners in <b>Playoffs</b>. Everyone sees the changes.</p>" +
+             "<button class='btn out' onclick='logout()'>Log out</button></div>";
+    }
+    return "<div class='card login'><h2>Admin login</h2><p class='legend'>Only the league admin can enter results.</p>" +
+           "<input id='em' type='email' placeholder='Email' autocomplete='username'>" +
+           "<input id='pw' type='password' placeholder='Password' autocomplete='current-password'>" +
+           "<button class='btn' onclick='login()'>Log in</button></div>";
   }
 
   // =============== DRAW THE PAGE ===============
   function render() {
     document.getElementById("nav").innerHTML = tabs.map(function (t) {
-      return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + t + "</button>";
+      const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
+      return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("");
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Rules: pageRules };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Rules: pageRules, Admin: pageAdmin };
     document.getElementById("app").innerHTML = pages[currentTab]();
   }
 
-  render();
+  // =============== START ===============
+  async function start() {
+    const s = await sb.auth.getSession();
+    isAdmin = !!(s.data && s.data.session);
+    render();
+    loadData();
+    // refresh every 30 seconds, but not while someone is typing
+    setInterval(function () {
+      const tag = document.activeElement ? document.activeElement.tagName : "";
+      if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") { loadData(); }
+    }, 30000);
+  }
+  start();
 </script>
 </body>
 </html>
