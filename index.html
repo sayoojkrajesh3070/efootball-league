@@ -179,18 +179,46 @@
   @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 
   /* ===== COUNTDOWN INTRO ===== */
-  #intro::before { animation: pulseRing .8s ease-out infinite; }
+  #intro::before { animation: pulseRing 1.2s ease-out infinite; }
   .i-top { font-family:"Oswald",sans-serif; letter-spacing:4px; font-size:clamp(14px,3.6vw,20px); color:var(--muted);
     text-transform:uppercase; position:relative; z-index:1; animation: fadeUp .6s ease both; }
   .count { position:relative; z-index:1; min-height:clamp(130px,40vw,270px); display:flex; align-items:center; justify-content:center; }
   .count span { display:block; font-family:"Oswald",sans-serif; font-weight:700; line-height:1;
     font-size:clamp(120px,40vw,260px); color:var(--text); text-shadow:0 0 40px rgba(46,204,136,.5);
-    animation: numPop .8s ease both; }
+    animation: numPop 1.2s ease both; }
   .count span.go { font-size:clamp(46px,14vw,110px); color:var(--gold); letter-spacing:4px; text-transform:uppercase;
-    text-shadow:0 0 36px rgba(245,179,1,.7); animation: kick .8s cubic-bezier(.2,1.5,.4,1) both; }
+    text-shadow:0 0 36px rgba(245,179,1,.7); animation: kick 1.2s cubic-bezier(.2,1.5,.4,1) both; }
   @keyframes pulseRing { from { transform:scale(.3); opacity:.9; } to { transform:scale(1.4); opacity:0; } }
   @keyframes numPop { 0% { transform:scale(2.4); opacity:0; } 25% { transform:scale(1); opacity:1; } 80% { opacity:1; } 100% { transform:scale(.85); opacity:.15; } }
   @keyframes kick { 0% { transform:scale(.3); opacity:0; } 45% { transform:scale(1.15); opacity:1; } 100% { transform:scale(1); opacity:1; } }
+  /* ===== BADGES ===== */
+  .bdg { margin-left:5px; font-size:15px; cursor:help; display:inline-block; animation: pop .5s ease both; }
+  .bdg:hover { transform: scale(1.4); }
+  .awards { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+  .award { background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:12px; transition: transform .2s, border-color .2s; }
+  .award:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .award .ic { font-size:28px; }
+  .award b { display:block; font-family:"Oswald",sans-serif; letter-spacing:.5px; }
+  .award small { display:block; color:var(--muted); margin-bottom:6px; }
+  .award .who { font-size:14px; }
+  .award .none { color:var(--muted); font-size:13px; }
+
+  /* ===== ROUND HIGHLIGHTS ===== */
+  .hl { border-color: var(--gold); background: linear-gradient(135deg, rgba(245,179,1,.08), var(--card) 60%); }
+  .hl h3 { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .hl h3 .legend { margin:0; font-family:"Inter",sans-serif; font-weight:400; }
+  .hlgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-bottom:14px; }
+  .hlbox { background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:12px 14px; animation: fadeUp .5s ease both; }
+  .hlbox .ic { font-size:26px; }
+  .hlbox small { display:block; color:var(--muted); }
+  .hlbox .t { font-family:"Oswald",sans-serif; letter-spacing:.5px; color:var(--gold); font-size:16px; }
+  .hlbox .m { margin-top:6px; font-size:15px; }
+  .tor { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .chip { display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:8px 14px 8px 8px; animation: fadeUp .5s ease both; transition: transform .2s; }
+  .chip:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .chip .badge { margin:0; }
+  .chip b { display:block; line-height:1.2; }
+  .chip small { color:var(--muted); font-size:12px; }
 
 </style>
 </head>
@@ -363,8 +391,78 @@
   }
 
   // =============== PAGES ===============
-  function pageStandings() {
+    // =============== AWARDS AND BADGES ===============
+  function computeBadges(rows) {
+    const out = {};
+    rows.forEach(function (r) { out[r.code] = []; });
+    function add(code, icon, name, why) { out[code].push({ icon: icon, name: name, why: why }); }
+
+    // streaks, from each team's results in match order
+    rows.forEach(function (r) {
+      let wins = 0;
+      for (let i = r.form.length - 1; i >= 0 && r.form[i] === "W"; i--) { wins++; }
+      let unbeaten = 0;
+      for (let i = r.form.length - 1; i >= 0 && r.form[i] !== "L"; i--) { unbeaten++; }
+      if (wins >= 3) { add(r.code, "🔥", "On Fire", wins + " wins in a row"); }
+      if (unbeaten >= 5) { add(r.code, "🎯", "Unbeaten", unbeaten + " matches unbeaten"); }
+    });
+
+    // best defence and top scorers (teams with at least 3 matches played)
+    const enough = rows.filter(function (r) { return r.played >= 3; });
+    if (enough.length) {
+      const minGA = Math.min.apply(null, enough.map(function (r) { return r.ga; }));
+      enough.filter(function (r) { return r.ga === minGA; })
+            .forEach(function (r) { add(r.code, "🧱", "Best Defence", r.ga + " goals conceded"); });
+      const maxGF = Math.max.apply(null, enough.map(function (r) { return r.gf; }));
+      if (maxGF > 0) {
+        enough.filter(function (r) { return r.gf === maxGF; })
+              .forEach(function (r) { add(r.code, "⚡", "Top Scorers", r.gf + " goals scored"); });
+      }
+    }
+
+    // giant killer: beat the team that is top of the table right now
+    const leader = rows[0];
+    if (leader && leader.played >= 3) {
+      const killers = {};
+      getPlayedMatches().forEach(function (m) {
+        if (m.home === leader.code && m.awayGoals > m.homeGoals) { killers[m.away] = true; }
+        if (m.away === leader.code && m.homeGoals > m.awayGoals) { killers[m.home] = true; }
+      });
+      Object.keys(killers).forEach(function (code) {
+        add(code, "🗡️", "Giant Killer", "Beat league leaders " + leader.name);
+      });
+    }
+    return out;
+  }
+
+  function badgeIcons(list) {
+    return list.map(function (b) {
+      return "<span class='bdg' title='" + b.name + ": " + b.why + "'>" + b.icon + "</span>";
+    }).join("");
+  }
+
+  function awardsCard(rows, badges) {
+    const types = [
+      ["🔥", "On Fire", "3+ wins in a row"],
+      ["🎯", "Unbeaten", "5+ matches without a loss"],
+      ["🧱", "Best Defence", "Fewest goals conceded"],
+      ["⚡", "Top Scorers", "Most goals scored"],
+      ["🗡️", "Giant Killer", "Beat the league leaders"]
+    ];
+    let html = "<div class='card'><h3>Awards</h3><div class='awards'>";
+    types.forEach(function (t) {
+      const holders = rows.filter(function (r) {
+        return badges[r.code].some(function (b) { return b.icon === t[0]; });
+      }).map(function (r) { return r.name; });
+      html += "<div class='award'><span class='ic'>" + t[0] + "</span><b>" + t[1] + "</b><small>" + t[2] + "</small>" +
+              (holders.length ? "<div class='who'>" + holders.join(", ") + "</div>" : "<div class='none'>Not awarded yet</div>") + "</div>";
+    });
+    return html + "</div></div>";
+  }
+
+    function pageStandings() {
     const rows = buildStandings();
+    const badges = computeBadges(rows);
     const done = rows.every(function (r) { return r.played === 18; });
     let html = "";
     if (done) { html += "<div class='shield'>🛡️ League Shield winners: " + rows[0].name + "</div>"; }
@@ -373,16 +471,70 @@
       const gd = r.gf - r.ga;
       const form = r.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
       html += "<tr class='" + (i < 4 ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
-        "<td class='left'><span class='badge'>" + initials(r.name) + "</span>" + r.name + (i === 0 ? " 🛡️" : "") + "</td>" +
+        "<td class='left'><span class='badge'>" + initials(r.name) + "</span>" + r.name + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
         "<td>" + r.played + "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost + "</td>" +
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
     });
-    html += "</table></div><p class='legend'>Green bar = playoff places (top 4). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored.</p>";
+    html += "</table></div><p class='legend'>Green bar = playoff places (top 4). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
+    html += awardsCard(rows, badges);
     return html;
   }
 
-  function pageFixtures() {
+    // =============== ROUND HIGHLIGHTS ===============
+  function roundHighlights(ri) {
+    const ms = buildFixtures()[ri];
+    const played = ms.filter(function (m) {
+      const r = results[m.id];
+      return r && r.h !== null && r.h !== "" && r.a !== null && r.a !== "";
+    }).map(function (m) { return { m: m, h: Number(results[m.id].h), a: Number(results[m.id].a) }; });
+    if (!played.length) { return ""; }
+
+    function line(p) {
+      return teams[p.m.home] + " <b>" + p.h + " - " + p.a + "</b> " + teams[p.m.away];
+    }
+    function box(icon, title, note, text) {
+      return "<div class='hlbox'><span class='ic'>" + icon + "</span><div class='t'>" + title + "</div><small>" + note + "</small><div class='m'>" + text + "</div></div>";
+    }
+
+    // match of the round: most goals, then biggest margin
+    const motr = played.slice().sort(function (x, y) {
+      return (y.h + y.a) - (x.h + x.a) || Math.abs(y.h - y.a) - Math.abs(x.h - x.a);
+    })[0];
+    // biggest win: largest margin, then most goals
+    const big = played.filter(function (p) { return p.h !== p.a; }).sort(function (x, y) {
+      return Math.abs(y.h - y.a) - Math.abs(x.h - x.a) || (y.h + y.a) - (x.h + x.a);
+    })[0];
+
+    // team of the round: best winning performances
+    const perf = [];
+    played.forEach(function (p) {
+      perf.push({ code: p.m.home, gf: p.h, ga: p.a, opp: p.m.away });
+      perf.push({ code: p.m.away, gf: p.a, ga: p.h, opp: p.m.home });
+    });
+    const winners = perf.filter(function (x) { return x.gf > x.ga; }).sort(function (x, y) {
+      return (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf;
+    }).slice(0, 3);
+
+    let html = "<div class='card hl'><h3><span>🏅 Round " + (ri + 1) + " Highlights</span><span class='legend'>" +
+               played.length + " of " + ms.length + " matches played</span></h3><div class='hlgrid'>";
+    html += box("⭐", "Match of the Round", "Most goals scored", line(motr));
+    if (big && big.m.id !== motr.m.id) {
+      html += box("💥", "Biggest Win", "Largest winning margin", line(big));
+    }
+    html += "</div><div class='t' style='font-family:Oswald,sans-serif;letter-spacing:.5px;color:var(--gold)'>Team of the Round</div>";
+    if (winners.length) {
+      html += "<div class='tor'>" + winners.map(function (w) {
+        return "<div class='chip'><span class='badge'>" + initials(teams[w.code]) + "</span><div><b>" + teams[w.code] +
+               "</b><small>beat " + teams[w.opp] + " " + w.gf + "-" + w.ga + "</small></div></div>";
+      }).join("") + "</div>";
+    } else {
+      html += "<p class='legend'>No winning team yet this round.</p>";
+    }
+    return html + "</div>";
+  }
+
+    function pageFixtures() {
     const rounds = buildFixtures();
     let html = "<div class='rounds'>";
     for (let i = 0; i < 18; i++) {
@@ -402,7 +554,7 @@
       }
       html += "<div class='match'><span class='h'>" + teams[m.home] + "</span><span>" + middle + "</span><span class='a'>" + teams[m.away] + "</span></div>";
     });
-    return html + "</div>";
+    return html + "</div>" + roundHighlights(currentRound);
   }
 
   function validWinner(stage, a, b) {
@@ -596,8 +748,8 @@
       // a fresh element each time, so the animation restarts
       box.innerHTML = "<span class='" + (last ? "go" : "") + "'>" + steps[i] + "</span>";
       i++;
-      if (i < steps.length) { setTimeout(show, 800); }
-      else { setTimeout(closeIntro, 1300); }
+      if (i < steps.length) { setTimeout(show, 1200); }
+      else { setTimeout(closeIntro, 1800); }
     }
 
     intro.addEventListener("click", closeIntro);
