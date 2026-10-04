@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="eFootball">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>eFootball Friends League Season 1</title>
@@ -24,6 +30,7 @@
 
 <!-- Supabase library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>try { if (localStorage.getItem("theme") === "light") { document.documentElement.setAttribute("data-theme", "light"); } } catch (e) {}</script>
 
 <style>
   :root { --bg:#0b1220; --card:#131c2e; --line:#243049; --text:#e8edf5; --muted:#94a3b8;
@@ -220,6 +227,28 @@
   .chip b { display:block; line-height:1.2; }
   .chip small { color:var(--muted); font-size:12px; }
 
+    /* ===== THEME TOGGLE ===== */
+  .themebtn { position:absolute; top:14px; right:14px; z-index:2; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3);
+    color:#fff; border-radius:999px; padding:6px 14px; cursor:pointer; font:inherit; font-size:13px; transition: background .2s, transform .15s; }
+  .themebtn:hover { background:rgba(255,255,255,.25); transform: translateY(-1px); }
+  :root[data-theme="light"] { --bg:#f1f5f9; --card:#ffffff; --line:#d9e0ea; --text:#0f172a; --muted:#5b6b82; --accent:#0a8f58; --gold:#b7791f; --red:#dc2626; }
+  :root[data-theme="light"] .ticker { background:#e8eef5; }
+  :root[data-theme="light"] .badge { background:#e3f4ec; }
+  :root[data-theme="light"] .score { background:#eef3f8; }
+  :root[data-theme="light"] tr.top4 { background:rgba(10,143,88,.08); }
+  :root[data-theme="light"] .btn, :root[data-theme="light"] .rounds button.on { color:#fff; }
+  :root[data-theme="light"] #intro { background: radial-gradient(circle at center, #e3f4ec 0%, #f1f5f9 70%); }
+  :root[data-theme="light"] .count span { text-shadow:none; }
+
+    /* ===== RECORDS ===== */
+  .recs { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .rec { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; animation: fadeUp .5s ease both; transition: transform .2s, border-color .2s; }
+  .rec:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .rec .ic { font-size:28px; }
+  .rec b { display:block; font-family:"Oswald",sans-serif; letter-spacing:.5px; color:var(--gold); }
+  .rec small { display:block; color:var(--muted); margin-bottom:8px; }
+  .rec .who { font-size:15px; }
+
 </style>
 </head>
 <body>
@@ -234,6 +263,7 @@
   <div class="wrap">
     <h1><span class="spin">🛡️</span> eFootball Friends League · Season 1</h1>
     <p>10 teams · home &amp; away · 18 rounds</p>
+    <button id="themeBtn" class="themebtn" onclick="toggleTheme()"></button>
   </div>
 </header>
 <div class="ticker" id="ticker"></div>
@@ -258,7 +288,7 @@
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Rules", "Admin"];
+  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
 
@@ -644,6 +674,113 @@
     });
     return html + "</div>";
   }
+    // =============== LEAGUE RECORDS ===============
+  function computeRecords() {
+    const rounds = buildFixtures();
+    const played = [];
+    const roundGoals = [];
+    rounds.forEach(function (round, ri) {
+      let goals = 0, count = 0;
+      round.forEach(function (m) {
+        const r = results[m.id];
+        if (r && r.h !== null && r.h !== "" && r.a !== null && r.a !== "") {
+          played.push({ ri: ri, home: m.home, away: m.away, h: Number(r.h), a: Number(r.a) });
+          goals += Number(r.h) + Number(r.a);
+          count++;
+        }
+      });
+      roundGoals.push({ ri: ri, goals: goals, count: count, total: round.length });
+    });
+    const rec = { played: played };
+
+    function pickMax(list, score) {
+      let best = null;
+      list.forEach(function (x) {
+        const s = score(x);
+        if (best === null || s > best.s) { best = { s: s, items: [x] }; }
+        else if (s === best.s) { best.items.push(x); }
+      });
+      return best;
+    }
+
+    const wins = played.filter(function (p) { return p.h !== p.a; });
+    rec.biggestWin = pickMax(wins, function (p) { return Math.abs(p.h - p.a) * 100 + p.h + p.a; });
+    rec.mostGoals = pickMax(played, function (p) { return p.h + p.a; });
+
+    const seq = {};
+    Object.keys(teams).forEach(function (c) { seq[c] = []; });
+    played.forEach(function (p) {
+      seq[p.home].push(p.h > p.a ? "W" : p.h === p.a ? "D" : "L");
+      seq[p.away].push(p.a > p.h ? "W" : p.h === p.a ? "D" : "L");
+    });
+    const streaks = Object.keys(teams).map(function (c) {
+      let w = 0, bw = 0, u = 0, bu = 0;
+      seq[c].forEach(function (x) {
+        w = (x === "W") ? w + 1 : 0;
+        u = (x !== "L") ? u + 1 : 0;
+        if (w > bw) { bw = w; }
+        if (u > bu) { bu = u; }
+      });
+      return { code: c, win: bw, unbeaten: bu };
+    });
+    rec.winStreak = pickMax(streaks, function (x) { return x.win; });
+    rec.unbeaten = pickMax(streaks, function (x) { return x.unbeaten; });
+
+    const home = {}, away = {};
+    Object.keys(teams).forEach(function (c) {
+      home[c] = { code: c, p: 0, pts: 0, gd: 0 };
+      away[c] = { code: c, p: 0, pts: 0, gd: 0 };
+    });
+    played.forEach(function (p) {
+      const hp = p.h > p.a ? 3 : p.h === p.a ? 1 : 0;
+      const ap = p.a > p.h ? 3 : p.h === p.a ? 1 : 0;
+      home[p.home].p++; home[p.home].pts += hp; home[p.home].gd += p.h - p.a;
+      away[p.away].p++; away[p.away].pts += ap; away[p.away].gd += p.a - p.h;
+    });
+    function bestSide(table) {
+      const list = Object.keys(table).map(function (c) { return table[c]; }).filter(function (x) { return x.p > 0; });
+      return pickMax(list, function (x) { return x.pts * 1000 + x.gd * 10 + 500 - x.p; });
+    }
+    rec.bestHome = bestSide(home);
+    rec.bestAway = bestSide(away);
+
+    // only rounds where every match has been played
+    const complete = roundGoals.filter(function (x) { return x.count === x.total; });
+    rec.roundGoals = pickMax(complete, function (x) { return x.goals; });
+    return rec;
+  }
+
+  function pageRecords() {
+    const r = computeRecords();
+    if (!r.played.length) {
+      return "<div class='card'><h2>League Records</h2><p class='legend'>Records appear after the first results are entered.</p></div>";
+    }
+    function line(p) {
+      return teams[p.home] + " <b>" + p.h + " - " + p.a + "</b> " + teams[p.away] + " <span class='legend'>(Round " + (p.ri + 1) + ")</span>";
+    }
+    function card(icon, title, note, text) {
+      return "<div class='rec'><span class='ic'>" + icon + "</span><b>" + title + "</b><small>" + note + "</small><div class='who'>" + text + "</div></div>";
+    }
+    const none = "<span class='legend'>Not set yet</span>";
+    let html = "<p class='legend'>Records update automatically from the results.</p><div class='recs'>";
+
+    html += card("💥", "Biggest Win", "Largest winning margin",
+      r.biggestWin ? r.biggestWin.items.map(line).join("<br>") : none);
+    html += card("⚽", "Highest-Scoring Match", "Most goals in one game",
+      r.mostGoals ? r.mostGoals.items.map(line).join("<br>") : none);
+    html += card("🔥", "Longest Winning Streak", "Wins in a row",
+      (r.winStreak && r.winStreak.s > 0) ? r.winStreak.items.map(function (x) { return teams[x.code]; }).join(", ") + " <b>(" + r.winStreak.s + ")</b>" : none);
+    html += card("🎯", "Longest Unbeaten Run", "Matches without a loss",
+      (r.unbeaten && r.unbeaten.s > 0) ? r.unbeaten.items.map(function (x) { return teams[x.code]; }).join(", ") + " <b>(" + r.unbeaten.s + ")</b>" : none);
+    html += card("🏠", "Best Home Record", "Most home points, then goal difference",
+      r.bestHome ? r.bestHome.items.map(function (x) { return teams[x.code] + " <b>" + x.pts + " pts</b> from " + x.p + " home games"; }).join("<br>") : none);
+    html += card("✈️", "Best Away Record", "Most away points, then goal difference",
+      r.bestAway ? r.bestAway.items.map(function (x) { return teams[x.code] + " <b>" + x.pts + " pts</b> from " + x.p + " away games"; }).join("<br>") : none);
+    html += card("📈", "Most Goals in a Round", "Counts completed rounds only",
+      r.roundGoals ? r.roundGoals.items.map(function (x) { return "Round " + (x.ri + 1) + " <b>(" + x.goals + " goals)</b>"; }).join("<br>") : "<span class='legend'>Needs a fully played round</span>");
+
+    return html + "</div>";
+  }
 
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
@@ -698,7 +835,7 @@
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("");
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Rules: pageRules, Admin: pageAdmin };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, Rules: pageRules, Admin: pageAdmin };
     const app = document.getElementById("app");
     app.innerHTML = pages[currentTab]();
 
@@ -725,6 +862,20 @@
       if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") { loadData(); }
     }, 30000);
   }
+
+    function themeLabel() {
+    const light = document.documentElement.getAttribute("data-theme") === "light";
+    document.getElementById("themeBtn").textContent = light ? "🌙 Dark" : "☀️ Light";
+  }
+  function toggleTheme() {
+    const light = document.documentElement.getAttribute("data-theme") === "light";
+    if (light) { document.documentElement.removeAttribute("data-theme"); }
+    else { document.documentElement.setAttribute("data-theme", "light"); }
+    try { localStorage.setItem("theme", light ? "dark" : "light"); } catch (e) {}
+    themeLabel();
+  }
+  themeLabel();
+
   start();
     // =============== OPENING COUNTDOWN ===============
   (function () {
@@ -754,6 +905,12 @@
 
     intro.addEventListener("click", closeIntro);
     show();
+
+      // lets the site be installed as an app
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
+
   })();
 
 </script>
