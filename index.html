@@ -256,6 +256,21 @@
   .modalbox { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; max-width:400px; width:100%; }
   .modalbox h3 { margin:0 0 10px; }
   .modalbox li { margin-bottom:8px; }
+    /* ===== TEAM PROFILE ===== */
+  .tl { color:var(--accent); cursor:pointer; text-decoration:none; border-bottom:1px dotted transparent; }
+  .tl:hover { border-bottom-color:var(--accent); }
+  .back { margin-bottom:14px; }
+  .thead { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .thead h2 { margin:0; }
+  .badge.big { width:64px; height:64px; font-size:22px; margin:0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:16px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center; animation: fadeUp .5s ease both; }
+  .stat b { display:block; font-family:"Oswald",sans-serif; font-size:22px; }
+  .stat small { color:var(--muted); }
+  .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+  .tm { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .tm span:nth-child(2) { flex:1; }
+  .pill { display:inline-block; min-width:30px; text-align:center; padding:2px 6px; border-radius:6px; font-size:12px; font-weight:700; color:#fff; }
 
 </style>
 </head>
@@ -299,6 +314,7 @@
   const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
+  let currentTeam = "T1";
 
   function setStatus(text) { document.getElementById("status").textContent = text || ""; }
 
@@ -509,7 +525,7 @@
       const gd = r.gf - r.ga;
       const form = r.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
       html += "<tr class='" + (i < 4 ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
-        "<td class='left'><span class='badge'>" + initials(r.name) + "</span>" + r.name + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
+        "<td class='left'><span class='badge'>" + initials(r.name) + "</span><a class='tl' onclick=\"openTeam('" + r.code + "')\">" + r.name + "</a>" + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
         "<td>" + r.played + "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost + "</td>" +
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
@@ -789,6 +805,101 @@
 
     return html + "</div>";
   }
+    // =============== TEAM PROFILE ===============
+  function openTeam(code) {
+    currentTeam = code;
+    currentTab = "Team";
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function teamMatches(code) {
+    const out = [];
+    buildFixtures().forEach(function (round, ri) {
+      round.forEach(function (m) {
+        if (m.home !== code && m.away !== code) { return; }
+        const r = results[m.id];
+        const played = !!(r && r.h !== null && r.h !== "" && r.a !== null && r.a !== "");
+        const isHome = (m.home === code);
+        const o = { ri: ri, isHome: isHome, opp: isHome ? m.away : m.home, played: played };
+        if (played) {
+          o.gf = Number(isHome ? r.h : r.a);
+          o.ga = Number(isHome ? r.a : r.h);
+          o.res = o.gf > o.ga ? "W" : (o.gf === o.ga ? "D" : "L");
+        }
+        out.push(o);
+      });
+    });
+    return out;
+  }
+
+  function pointsChart(done) {
+    if (!done.length) { return "<p class='legend'>The chart appears after the first result.</p>"; }
+    const pts = [0];
+    done.forEach(function (x) { pts.push(pts[pts.length - 1] + (x.res === "W" ? 3 : x.res === "D" ? 1 : 0)); });
+    const max = Math.max(3, pts[pts.length - 1]);
+    const n = done.length;
+    function X(i) { return 12 + i * (296 / n); }
+    function Y(v) { return 98 - (v / max) * 86; }
+    const line = pts.map(function (v, i) { return X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join(" ");
+    const colors = { W: "#16a34a", D: "#9ca3af", L: "#ef4444" };
+    let svg = "<svg viewBox='0 0 320 110' style='width:100%;height:auto'>" +
+      "<line x1='12' y1='98' x2='308' y2='98' stroke='var(--line)'/>" +
+      "<polyline points='" + line + "' fill='none' stroke='var(--accent)' stroke-width='2.5' stroke-linejoin='round'/>";
+    done.forEach(function (x, i) {
+      svg += "<circle cx='" + X(i + 1).toFixed(1) + "' cy='" + Y(pts[i + 1]).toFixed(1) + "' r='5' fill='" + colors[x.res] + "'/>";
+    });
+    return svg + "</svg><p class='legend'>Points after each match. Green = win, grey = draw, red = loss. Now: " + pts[pts.length - 1] + " pts.</p>";
+  }
+
+  function pageTeam() {
+    const code = currentTeam;
+    if (!teams[code]) { return "<div class='card'>Team not found.</div>"; }
+    const rows = buildStandings();
+    const pos = rows.findIndex(function (r) { return r.code === code; });
+    const row = rows[pos];
+    const ms = teamMatches(code);
+    const done = ms.filter(function (x) { return x.played; });
+    const next = ms.filter(function (x) { return !x.played; }).slice(0, 5);
+    const sq = squads[code] || { owner: "", players: "" };
+    const list = playerList(sq.players);
+    const gd = row.gf - row.ga;
+    const form = row.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
+    const bdg = (typeof computeBadges === "function" && typeof badgeIcons === "function") ? badgeIcons(computeBadges(rows)[code]) : "";
+
+    function stat(label, value) { return "<div class='stat'><b>" + value + "</b><small>" + label + "</small></div>"; }
+    function oppLink(c) { return "<a class='tl' onclick=\"openTeam('" + c + "')\">" + teams[c] + "</a>"; }
+
+    let html = "<button class='btn out back' onclick=\"currentTab='Standings';render()\">← Back to standings</button>";
+    html += "<div class='card thead'><span class='badge big'>" + initials(teams[code]) + "</span><div>" +
+      "<h2>" + teams[code] + " " + (pos === 0 ? "🛡️" : "") + bdg + "</h2>" +
+      "<div class='legend'>Owner: <b style='color:var(--text)'>" + (sq.owner ? esc(sq.owner) : "TBA") + "</b></div>" +
+      "<div class='form' style='margin-top:6px'>" + form + "</div></div></div>";
+    html += "<div class='stats'>" + stat("Position", "#" + (pos + 1)) + stat("Points", row.points) + stat("Played", row.played) +
+      stat("W-D-L", row.won + "-" + row.drawn + "-" + row.lost) + stat("Goals", row.gf + ":" + row.ga) + stat("Goal diff", (gd > 0 ? "+" : "") + gd) + "</div>";
+
+    html += "<div class='card'><h3>Points progress</h3>" + pointsChart(done) + "</div>";
+
+    html += "<div class='two'><div class='card'><h3>Results</h3>";
+    if (done.length) {
+      html += done.slice().reverse().map(function (x) {
+        return "<div class='tm'><span class='pill " + x.res + "'>" + x.res + "</span><span>R" + (x.ri + 1) + " · " + (x.isHome ? "Home" : "Away") +
+               " vs " + oppLink(x.opp) + "</span><b>" + x.gf + " - " + x.ga + "</b></div>";
+      }).join("");
+    } else { html += "<p class='legend'>No results yet.</p>"; }
+    html += "</div><div class='card'><h3>Next fixtures</h3>";
+    if (next.length) {
+      html += next.map(function (x) {
+        return "<div class='tm'><span class='pill D'>R" + (x.ri + 1) + "</span><span>" + (x.isHome ? "Home" : "Away") + " vs " + oppLink(x.opp) + "</span></div>";
+      }).join("");
+    } else { html += "<p class='legend'>All matches played.</p>"; }
+    html += "</div></div>";
+
+    html += "<div class='card'><h3>Squad (" + list.length + " players)</h3>";
+    html += list.length ? "<ol class='plist'>" + list.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol>"
+                        : "<p class='legend'>Squad not added yet.</p>";
+    return html + "</div>";
+  }
 
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
@@ -843,7 +954,7 @@
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, Rules: pageRules, Admin: pageAdmin };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = pages[currentTab]();
 
