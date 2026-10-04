@@ -76,6 +76,71 @@
   .plist li { margin-bottom:3px; }
   li { margin-bottom:8px; }
   @media (max-width:520px) { header h1 { font-size:24px; } .match { font-size:14px; } }
+  /* ===== SPORTS LOOK ===== */
+  header { position:relative; overflow:hidden;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 70px, transparent 70px 140px),
+      linear-gradient(135deg,#5a0000,#7b0101 50%,#0b1220); }
+  header::after { content:""; position:absolute; right:-70px; top:-70px; width:240px; height:240px;
+    border:3px solid rgba(255,255,255,.12); border-radius:50%; }
+  header h1 { animation: slideDown .7s ease both; }
+  header p  { animation: slideDown .7s .15s ease both; }
+
+  /* live results ticker */
+  .ticker { background:#05080f; border-bottom:2px solid var(--accent); overflow:hidden; white-space:nowrap; padding:8px 0; }
+  .track { display:inline-block; animation: scroll 40s linear infinite; }
+  .ticker:hover .track { animation-play-state: paused; }
+  .tick { display:inline-block; margin:0 22px; font-family:"Oswald",sans-serif; letter-spacing:.5px; font-size:14px; color:var(--muted); }
+  .tick b { color:var(--text); }
+  .tick em { font-style:normal; color:var(--accent); background:#10301f; padding:2px 8px; border-radius:4px; margin:0 6px; }
+  .tickmsg { padding:0 16px; color:var(--muted); font-family:"Oswald",sans-serif; }
+  @keyframes scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+  /* page transitions */
+  #app.enter > * { animation: fadeUp .45s ease both; }
+  #app.enter > *:nth-child(2) { animation-delay:.08s; }
+  #app.enter > *:nth-child(3) { animation-delay:.16s; }
+  #app.enter tr { animation: rowIn .4s ease both; }
+  #app.enter tr:nth-child(2){animation-delay:.05s} #app.enter tr:nth-child(3){animation-delay:.1s}
+  #app.enter tr:nth-child(4){animation-delay:.15s} #app.enter tr:nth-child(5){animation-delay:.2s}
+  #app.enter tr:nth-child(6){animation-delay:.25s} #app.enter tr:nth-child(7){animation-delay:.3s}
+  #app.enter tr:nth-child(8){animation-delay:.35s} #app.enter tr:nth-child(9){animation-delay:.4s}
+  #app.enter tr:nth-child(10){animation-delay:.45s} #app.enter tr:nth-child(11){animation-delay:.5s}
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes rowIn    { from { opacity:0; transform:translateX(-18px); } to { opacity:1; transform:none; } }
+  @keyframes slideDown{ from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:none; } }
+
+  /* interactive feel */
+  tbody tr, table tr { transition: background .2s; }
+  table tr:hover td { background: rgba(255,255,255,.04); }
+  tr.top4:first-of-type { }
+  nav button, .rounds button, .btn { transition: transform .15s, background .2s, color .2s, box-shadow .2s; }
+  nav button:hover, .rounds button:hover { transform: translateY(-2px); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(46,204,136,.35); }
+  .btn:active, .rounds button:active { transform: scale(.95); }
+  .card { transition: transform .25s, box-shadow .25s, border-color .25s; }
+  .card:hover { border-color: #33466b; }
+  .badge { transition: transform .25s; }
+  tr:hover .badge { transform: scale(1.18) rotate(-6deg); }
+
+  /* scoreboard look for scores */
+  .score { font-family:"Oswald",sans-serif; background:#05080f; border:1px solid var(--line); border-radius:8px; padding:4px 12px; letter-spacing:2px; color:var(--accent); }
+  .match { transition: background .2s; }
+  .match:hover { background: rgba(46,204,136,.06); }
+  .rounds button.on { box-shadow: 0 0 14px rgba(46,204,136,.5); }
+
+  /* top of the table glows */
+  tr.top4 td:first-child { animation: pulseBar 2.4s ease-in-out infinite; }
+  @keyframes pulseBar { 0%,100% { box-shadow: inset 4px 0 0 var(--accent); } 50% { box-shadow: inset 7px 0 0 var(--accent); } }
+  .shield { animation: glow 2s ease-in-out infinite alternate; }
+  .form span:last-child { animation: pop .5s ease both; }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+  /* turn animations off for people who prefer less motion */
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  @keyframes glow { from { box-shadow: 0 0 6px rgba(245,179,1,.3); } to { box-shadow: 0 0 28px rgba(245,179,1,.8); } }
+
 </style>
 </head>
 <body>
@@ -86,6 +151,7 @@
     <p>10 teams · home &amp; away · 18 rounds</p>
   </div>
 </header>
+<div class="ticker" id="ticker"></div>
 
 <nav id="nav"></nav>
 <main><div class="wrap"><p class="status" id="status"></p><div id="app"></div></div></main>
@@ -394,13 +460,48 @@
   }
 
   // =============== DRAW THE PAGE ===============
+    let lastKey = "";
+  let lastTicker = "";
+
+  function renderTicker() {
+    const played = buildFixtures().flat().filter(function (m) {
+      const r = results[m.id];
+      return r && r.h !== null && r.h !== "" && r.a !== null && r.a !== "";
+    }).slice(-10);
+    let html;
+    if (played.length === 0) {
+      html = "<div class='tickmsg'>⚽ Season kicks off soon. Latest results will scroll here.</div>";
+    } else {
+      const items = played.map(function (m) {
+        const r = results[m.id];
+        return "<span class='tick'><b>" + teams[m.home] + "</b><em>" + r.h + " - " + r.a + "</em><b>" + teams[m.away] + "</b></span>";
+      }).join("");
+      html = "<div class='track'>" + items + items + "</div>";
+    }
+    if (html !== lastTicker) {
+      document.getElementById("ticker").innerHTML = html;
+      lastTicker = html;
+    }
+  }
+
   function render() {
     document.getElementById("nav").innerHTML = tabs.map(function (t) {
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("");
     const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Rules: pageRules, Admin: pageAdmin };
-    document.getElementById("app").innerHTML = pages[currentTab]();
+    const app = document.getElementById("app");
+    app.innerHTML = pages[currentTab]();
+
+    // play the entrance animation only when the tab or round changes
+    const key = currentTab + (currentTab === "Fixtures" ? currentRound : "");
+    if (key !== lastKey) {
+      app.classList.remove("enter");
+      void app.offsetWidth;          // restarts the animation
+      app.classList.add("enter");
+      lastKey = key;
+    }
+    renderTicker();
   }
 
   // =============== START ===============
