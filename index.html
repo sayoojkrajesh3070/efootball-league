@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>eFootball Friends League Season 1</title>
 
+<meta name="description" content="Live standings, fixtures, playoffs and squads for the eFootball Friends League, Season 1.">
+
+<!-- Link preview (WhatsApp, Telegram, Facebook, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="eFootball Friends League · Season 1">
+<meta property="og:description" content="Live standings, fixtures, playoffs and squads. 10 teams, home and away, League Shield.">
+<meta property="og:url" content="https://sayoojkrajesh3070.github.io/efootball-league/">
+<meta property="og:image" content="https://sayoojkrajesh3070.github.io/efootball-league/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#7b0101">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
@@ -141,9 +154,53 @@
 
   @keyframes glow { from { box-shadow: 0 0 6px rgba(245,179,1,.3); } to { box-shadow: 0 0 28px rgba(245,179,1,.8); } }
 
+  /* ===== OPENING INTRO ===== */
+  #intro { position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:20px; cursor:pointer; overflow:hidden;
+    background: radial-gradient(circle at center, #0f2a1f 0%, #0b1220 70%);
+    transition: opacity .8s ease, transform .8s ease; }
+  #intro.hide { opacity:0; transform:scale(1.08); pointer-events:none; }
+  #intro::before { content:""; position:absolute; width:520px; height:520px; max-width:90vw; max-height:90vw;
+    border:3px solid rgba(46,204,136,.25); border-radius:50%; animation: ring 2.4s ease-out both; }
+  #intro::after { content:""; position:absolute; left:0; right:0; top:50%; height:2px; background:rgba(46,204,136,.18);
+    transform-origin:center; animation: line 1.2s ease-out both; }
+  .i-shield { font-size:86px; animation: shieldIn 1.2s cubic-bezier(.2,1.4,.4,1) both, spin3d 3s 1.2s linear infinite; position:relative; z-index:1; }
+  .i-title { font-family:"Oswald",sans-serif; font-size:clamp(28px,7vw,54px); letter-spacing:3px; text-transform:uppercase;
+    margin:14px 0 4px; position:relative; z-index:1; }
+  .i-title span { display:inline-block; opacity:0; animation: letterIn .5s ease forwards; }
+  .i-sub { font-family:"Oswald",sans-serif; font-size:clamp(16px,4vw,24px); letter-spacing:6px; color:var(--accent);
+    opacity:0; animation: fadeUp .8s 1.6s ease forwards; position:relative; z-index:1; }
+  .i-skip { position:absolute; bottom:28px; color:var(--muted); font-size:13px; opacity:0; animation: fadeUp .6s 1.2s ease forwards; }
+  @keyframes shieldIn { from { transform:scale(0) rotate(-200deg); opacity:0; } to { transform:scale(1) rotate(0); opacity:1; } }
+  @keyframes letterIn { from { opacity:0; transform:translateY(24px) scale(.7); } to { opacity:1; transform:none; } }
+  @keyframes ring { from { transform:scale(.2); opacity:1; } to { transform:scale(1.5); opacity:0; } }
+  @keyframes line { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  @keyframes spin3d { from { transform:rotateY(0deg); } to { transform:rotateY(360deg); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+  /* ===== COUNTDOWN INTRO ===== */
+  #intro::before { animation: pulseRing .8s ease-out infinite; }
+  .i-top { font-family:"Oswald",sans-serif; letter-spacing:4px; font-size:clamp(14px,3.6vw,20px); color:var(--muted);
+    text-transform:uppercase; position:relative; z-index:1; animation: fadeUp .6s ease both; }
+  .count { position:relative; z-index:1; min-height:clamp(130px,40vw,270px); display:flex; align-items:center; justify-content:center; }
+  .count span { display:block; font-family:"Oswald",sans-serif; font-weight:700; line-height:1;
+    font-size:clamp(120px,40vw,260px); color:var(--text); text-shadow:0 0 40px rgba(46,204,136,.5);
+    animation: numPop .8s ease both; }
+  .count span.go { font-size:clamp(46px,14vw,110px); color:var(--gold); letter-spacing:4px; text-transform:uppercase;
+    text-shadow:0 0 36px rgba(245,179,1,.7); animation: kick .8s cubic-bezier(.2,1.5,.4,1) both; }
+  @keyframes pulseRing { from { transform:scale(.3); opacity:.9; } to { transform:scale(1.4); opacity:0; } }
+  @keyframes numPop { 0% { transform:scale(2.4); opacity:0; } 25% { transform:scale(1); opacity:1; } 80% { opacity:1; } 100% { transform:scale(.85); opacity:.15; } }
+  @keyframes kick { 0% { transform:scale(.3); opacity:0; } 45% { transform:scale(1.15); opacity:1; } 100% { transform:scale(1); opacity:1; } }
+
 </style>
 </head>
 <body>
+
+<div id="intro">
+  <div class="i-top">🛡️ eFootball Friends League · Season 1</div>
+  <div class="count" id="count"></div>
+  <div class="i-skip">Tap to skip</div>
+</div>
 
 <header>
   <div class="wrap">
@@ -517,6 +574,36 @@
     }, 30000);
   }
   start();
+    // =============== OPENING COUNTDOWN ===============
+  (function () {
+    const intro = document.getElementById("intro");
+    let seen = false;
+    try { seen = sessionStorage.getItem("introSeen") === "1"; } catch (e) {}
+    if (seen) { intro.remove(); return; }
+
+    const box = document.getElementById("count");
+    const steps = ["3", "2", "1", "KICK OFF!"];
+    let i = 0;
+
+    function closeIntro() {
+      intro.classList.add("hide");
+      try { sessionStorage.setItem("introSeen", "1"); } catch (e) {}
+      setTimeout(function () { intro.remove(); }, 900);
+    }
+
+    function show() {
+      const last = (i === steps.length - 1);
+      // a fresh element each time, so the animation restarts
+      box.innerHTML = "<span class='" + (last ? "go" : "") + "'>" + steps[i] + "</span>";
+      i++;
+      if (i < steps.length) { setTimeout(show, 800); }
+      else { setTimeout(closeIntro, 1300); }
+    }
+
+    intro.addEventListener("click", closeIntro);
+    show();
+  })();
+
 </script>
 </body>
 </html>
