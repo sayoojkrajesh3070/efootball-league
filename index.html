@@ -339,27 +339,36 @@
     render();
   }
 
-  // =============== FIXTURES (circle method) ===============
+    // =============== FIXTURE LIST (fixed, checked: no 3 home or away games in a row) ===============
+  const SCHEDULE = [
+    ["T10-T7", "T8-T9", "T6-T3", "T4-T2", "T1-T5"],  // Round 1
+    ["T6-T7", "T8-T4", "T1-T10", "T5-T9", "T2-T3"],  // Round 2
+    ["T7-T5", "T2-T1", "T3-T4", "T9-T6", "T10-T8"],  // Round 3
+    ["T4-T7", "T1-T6", "T8-T5", "T10-T2", "T3-T9"],  // Round 4
+    ["T7-T8", "T6-T10", "T9-T4", "T1-T3", "T5-T2"],  // Round 5
+    ["T7-T3", "T2-T9", "T10-T5", "T8-T1", "T6-T4"],  // Round 6
+    ["T9-T7", "T3-T10", "T2-T8", "T5-T6", "T4-T1"],  // Round 7
+    ["T7-T2", "T3-T5", "T1-T9", "T4-T10", "T6-T8"],  // Round 8
+    ["T1-T7", "T5-T4", "T2-T6", "T8-T3", "T10-T9"],  // Round 9
+    ["T6-T2", "T3-T8", "T7-T1", "T4-T5", "T9-T10"],  // Round 10
+    ["T2-T7", "T8-T6", "T5-T3", "T9-T1", "T10-T4"],  // Round 11
+    ["T1-T4", "T6-T5", "T7-T9", "T8-T2", "T10-T3"],  // Round 12
+    ["T9-T2", "T1-T8", "T3-T7", "T4-T6", "T5-T10"],  // Round 13
+    ["T6-T1", "T9-T3", "T2-T10", "T7-T4", "T5-T8"],  // Round 14
+    ["T2-T5", "T3-T1", "T10-T6", "T8-T7", "T4-T9"],  // Round 15
+    ["T6-T9", "T8-T10", "T1-T2", "T4-T3", "T5-T7"],  // Round 16
+    ["T9-T8", "T5-T1", "T2-T4", "T3-T6", "T7-T10"],  // Round 17
+    ["T9-T5", "T7-T6", "T4-T8", "T10-T1", "T3-T2"]   // Round 18
+  ];
+  // each entry is "HOME-AWAY", for example "T10-T7" means T10 is at home against T7
+
   function buildFixtures() {
-    let order = Object.keys(teams);
-    const firstLeg = [];
-    for (let r = 0; r < 9; r++) {
-      const round = [];
-      for (let i = 0; i < 5; i++) {
-        let home = order[i];
-        let away = order[9 - i];
-        if ((r + i) % 2 === 1) { const t = home; home = away; away = t; }
-        round.push({ id: "R" + (r + 1) + "-" + (i + 1), home: home, away: away });
-      }
-      firstLeg.push(round);
-      order = [order[0], order[9]].concat(order.slice(1, 9));
-    }
-    const secondLeg = firstLeg.map(function (round, r) {
-      return round.map(function (m, i) {
-        return { id: "R" + (r + 10) + "-" + (i + 1), home: m.away, away: m.home };
+    return SCHEDULE.map(function (round, r) {
+      return round.map(function (code, i) {
+        const t = code.split("-");
+        return { id: "R" + (r + 1) + "-" + (i + 1), home: t[0], away: t[1] };
       });
     });
-    return firstLeg.concat(secondLeg);
   }
 
   // =============== STANDINGS LOGIC ===============
