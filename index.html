@@ -256,6 +256,7 @@
   .modalbox { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; max-width:400px; width:100%; }
   .modalbox h3 { margin:0 0 10px; }
   .modalbox li { margin-bottom:8px; }
+
     /* ===== TEAM PROFILE ===== */
   .tl { color:var(--accent); cursor:pointer; text-decoration:none; border-bottom:1px dotted transparent; }
   .tl:hover { border-bottom-color:var(--accent); }
@@ -268,9 +269,23 @@
   .stat b { display:block; font-family:"Oswald",sans-serif; font-size:22px; }
   .stat small { color:var(--muted); }
   .two { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
-  .tm { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .tm { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
   .tm span:nth-child(2) { flex:1; }
   .pill { display:inline-block; min-width:30px; text-align:center; padding:2px 6px; border-radius:6px; font-size:12px; font-weight:700; color:#fff; }
+  
+  /* ===== GOLDEN BOOT ===== */
+  .boot { display:grid; gap:10px; }
+  .brow { display:grid; grid-template-columns:34px 36px 1fr 44px; gap:10px; align-items:center; padding:10px 12px;
+    background:var(--card); border:1px solid var(--line); border-radius:12px; position:relative; overflow:hidden;
+    animation: fadeUp .5s ease both; transition: transform .2s, border-color .2s; }
+  .brow:hover { transform: translateY(-2px); border-color: var(--gold); }
+  .brow .fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg, rgba(245,179,1,.25), rgba(245,179,1,0)); z-index:0; transition: width .6s ease; }
+  .brow > *:not(.fill) { position:relative; z-index:1; }
+  .brow .rk { font-family:"Oswald",sans-serif; font-size:20px; color:var(--muted); text-align:center; }
+  .brow.first { border-color:var(--gold); }
+  .brow .badge { margin:0; }
+  .brow small { display:block; color:var(--muted); }
+  .brow .g { font-family:"Oswald",sans-serif; font-size:24px; font-weight:700; text-align:right; color:var(--gold); }
 
 </style>
 </head>
@@ -311,10 +326,12 @@
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Rules", "Admin"];
+  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Golden Boot", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
   let currentTeam = "T1";
+  let bootTeam = "T1";
+  let goalLog = [];
 
   function setStatus(text) { document.getElementById("status").textContent = text || ""; }
 
@@ -328,6 +345,7 @@
     const r = await sb.from("results").select("*");
     const p = await sb.from("playoffs").select("*");
     const s = await sb.from("squads").select("*");
+    const g = await sb.from("goals").select("*");
     if (r.error || p.error || s.error) { setStatus("Could not load data. Check your internet and refresh."); return; }
     setStatus("");
     results = {};
@@ -336,6 +354,7 @@
     p.data.forEach(function (row) { playoffWinners[row.stage] = row.winner; });
     squads = {};
     s.data.forEach(function (row) { squads[row.team] = { owner: row.owner || "", players: row.players || "" }; });
+    goalLog = g.error ? [] : g.data;
     render();
   }
 
@@ -910,6 +929,94 @@
     return html + "</div>";
   }
 
+  // =============== GOLDEN BOOT ===============
+  function bootTotals() {
+    const map = {};
+    goalLog.forEach(function (g) {
+      const k = g.team + "|" + g.player;
+      if (!map[k]) { map[k] = { team: g.team, player: g.player, goals: 0 }; }
+      map[k].goals += g.goals;
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) {
+      return b.goals - a.goals || a.player.localeCompare(b.player);
+    });
+  }
+
+  async function saveGoal() {
+    if (!isAdmin) { return; }
+    const player = document.getElementById("bp").value;
+    const goals = parseInt(document.getElementById("bg").value, 10);
+    const round = document.getElementById("br").value;
+    if (!player) { setStatus("Pick a player first (add the squad in the Squads tab)."); return; }
+    if (!goals || goals < 1) { setStatus("Enter at least 1 goal."); return; }
+    const row = { team: bootTeam, player: player, goals: goals };
+    if (round) { row.round = Number(round); }
+    const res = await sb.from("goals").insert(row).select();
+    if (res.error) { setStatus("Could not save: " + res.error.message); return; }
+    goalLog.push(res.data[0]);
+    setStatus(player + ": " + goals + " goal(s) saved.");
+    render();
+  }
+
+  async function deleteGoal(id) {
+    if (!isAdmin) { return; }
+    const res = await sb.from("goals").delete().eq("id", id);
+    if (res.error) { setStatus("Could not delete: " + res.error.message); return; }
+    goalLog = goalLog.filter(function (g) { return g.id !== id; });
+    render();
+  }
+
+  function pageBoot() {
+    const list = bootTotals();
+    const top = list.length ? list[0].goals : 1;
+    let html = "<p class='legend'>The race for the league's top scorer. Goals are added by the admin after each match.</p>";
+
+    if (!list.length) {
+      html += "<div class='card'><p class='legend'>No goals logged yet. The race starts after the first match.</p></div>";
+    } else {
+      html += "<div class='boot'>";
+      let rank = 0, prev = null;
+      list.slice(0, 15).forEach(function (p, i) {
+        if (p.goals !== prev) { rank = i + 1; prev = p.goals; }
+        html += "<div class='brow" + (rank === 1 ? " first" : "") + "'><span class='fill' style='width:" + Math.round(p.goals / top * 100) + "%'></span>" +
+          "<span class='rk'>" + (rank === 1 ? "👟" : rank) + "</span><span class='badge'>" + initials(teams[p.team]) + "</span>" +
+          "<div><b>" + esc(p.player) + "</b><small>" + teams[p.team] + "</small></div><span class='g'>" + p.goals + "</span></div>";
+      });
+      html += "</div>";
+      if (list.length > 15) { html += "<p class='legend'>Showing the top 15 of " + list.length + " scorers.</p>"; }
+    }
+
+    if (isAdmin) {
+      const pl = playerList((squads[bootTeam] || { players: "" }).players);
+      html += "<div class='card' style='margin-top:16px'><h3>Admin: add goals</h3><div class='row'>" +
+        "<select id='bt' onchange=\"bootTeam=this.value;render()\">" +
+        Object.keys(teams).map(function (c) { return "<option value='" + c + "'" + (c === bootTeam ? " selected" : "") + ">" + teams[c] + "</option>"; }).join("") + "</select>" +
+        "<select id='bp'>" + (pl.length ? pl.map(function (p) { return "<option value=\"" + esc(p) + "\">" + esc(p) + "</option>"; }).join("") :
+          "<option value=''>Add this team's squad first</option>") + "</select>" +
+        "<input id='bg' type='number' min='1' value='1' style='width:70px'>" +
+        "<select id='br'><option value=''>Round (optional)</option>" +
+        Array.from({ length: 18 }, function (_, i) { return "<option value='" + (i + 1) + "'>Round " + (i + 1) + "</option>"; }).join("") + "</select>" +
+        "<button class='btn' onclick='saveGoal()'>Add goals</button></div>";
+
+      const rows = buildStandings();
+      const logged = {};
+      goalLog.forEach(function (g) { logged[g.team] = (logged[g.team] || 0) + g.goals; });
+      const gaps = rows.filter(function (r) { return r.gf > (logged[r.code] || 0); });
+      html += gaps.length
+        ? "<p class='legend'>Goals still to assign: " + gaps.map(function (r) { return r.name + " " + (r.gf - (logged[r.code] || 0)); }).join(", ") + ". (Own goals count for the other team but not for the Golden Boot.)</p>"
+        : "<p class='legend'>All team goals are assigned to players.</p>";
+
+      html += "<h3 style='margin-top:14px'>Recent entries</h3>";
+      const recent = goalLog.slice().sort(function (a, b) { return b.id - a.id; }).slice(0, 12);
+      html += recent.length ? recent.map(function (g) {
+        return "<div class='tm'><span>⚽ <b>" + esc(g.player) + "</b> (" + teams[g.team] + ") ×" + g.goals + (g.round ? " · R" + g.round : "") +
+               "</span><button class='g' onclick='deleteGoal(" + g.id + ")'>✕</button></div>";
+      }).join("") : "<p class='legend'>Nothing logged yet.</p>";
+      html += "</div>";
+    }
+    return html;
+  }
+
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
       "<li><b>Format:</b> 10 teams, home and away. Each team plays every other team twice, so 18 matches each.</li>" +
@@ -970,7 +1077,7 @@
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = pages[currentTab]();
 
