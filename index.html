@@ -287,6 +287,8 @@
   .brow small { display:block; color:var(--muted); }
   .brow .g { font-family:"Oswald",sans-serif; font-size:24px; font-weight:700; text-align:right; color:var(--gold); }
 
+  /* ===== PLAYER STATS ===== */
+  .gt { display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; background:rgba(245,179,1,.15); color:var(--gold); font-size:12px; font-weight:700; }
 </style>
 </head>
 <body>
@@ -300,7 +302,7 @@
 <header>
   <div class="wrap">
     <h1><span class="spin">🛡️</span> eFootball League Season 1</h1>
-    <p>10 teams · home &amp; away · 18 rounds</p>
+    <p>10 teams · home &amp; away · 18 rounds · top 6 to the playoffs</p>
     <button id="themeBtn" class="themebtn" onclick="toggleTheme()"></button>
   </div>
 </header>
@@ -326,12 +328,14 @@
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Golden Boot", "Rules", "Admin"];
+  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Golden Boot", "Player Stats", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
   let currentTeam = "T1";
   let bootTeam = "T1";
   let goalLog = [];
+  let statTeam = "all";
+  let statSort = "goals";
 
   function setStatus(text) { document.getElementById("status").textContent = text || ""; }
 
@@ -552,13 +556,13 @@
     rows.forEach(function (r, i) {
       const gd = r.gf - r.ga;
       const form = r.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
-      html += "<tr class='" + (i < 4 ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
+      html += "<tr class='" + (i < 6 ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
         "<td class='left'><span class='badge'>" + initials(r.name) + "</span><a class='tl' onclick=\"openTeam('" + r.code + "')\">" + r.name + "</a>" + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
         "<td>" + r.played + "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost + "</td>" +
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
     });
-    html += "</table></div><p class='legend'>Green bar = playoff places (top 4). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
+    html += "</table></div><p class='legend'>Green bar = playoff places (top 6). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
     html += awardsCard(rows, badges);
     return html;
   }
@@ -661,27 +665,33 @@
     return html + "</div>";
   }
 
-  function pagePlayoffs() {
+    function pagePlayoffs() {
     const table = buildStandings();
     const done = table.every(function (r) { return r.played === 18; });
-    const top = table.slice(0, 4).map(function (r) { return r.code; });
-    const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3];
+    const top = table.slice(0, 6).map(function (r) { return r.code; });
+    const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3], t5 = top[4], t6 = top[5];
+
     const q1Winner = validWinner("q1", t1, t2);
     const q1Loser = q1Winner ? (q1Winner === t1 ? t2 : t1) : null;
-    const elWinner = validWinner("el", t3, t4);
-    const q2Winner = validWinner("q2", q1Loser, elWinner);
+    const ko1Winner = validWinner("ko1", t3, t6);
+    const ko2Winner = validWinner("ko2", t4, t5);
+    const el1Winner = validWinner("el1", ko1Winner, ko2Winner);
+    const q2Winner = validWinner("q2", q1Loser, el1Winner);
     const champion = validWinner("f", q1Winner, q2Winner);
 
     let html = "<p class='legend'>" + (done ? "League stage complete. The playoff line-up is set." :
-               "Provisional: based on the current top 4. Final after all 18 rounds.") + "</p><div class='po'>";
+               "Provisional: based on the current top 6. Final after all 18 rounds.") + "</p><div class='po'>";
     html += matchCard("q1", "Qualifier 1", "1st vs 2nd. Winner goes to the Final", t1, t2, "#2ecc88");
-    html += matchCard("el", "Eliminator", "3rd vs 4th. Loser is out", t3, t4, "#ef4444");
-    html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator", q1Loser, elWinner, "#3b82f6");
+    html += matchCard("ko1", "Knockout 1", "3rd vs 6th. Winner goes to Eliminator 1", t3, t6, "#f97316");
+    html += matchCard("ko2", "Knockout 2", "4th vs 5th. Winner goes to Eliminator 1", t4, t5, "#f97316");
+    html += matchCard("el1", "Eliminator 1", "Winner of Knockout 1 vs winner of Knockout 2", ko1Winner, ko2Winner, "#ef4444");
+    html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator 1", q1Loser, el1Winner, "#3b82f6");
     html += matchCard("f", "Final", "Winner of Q1 vs winner of Q2", q1Winner, q2Winner, "#f5b301");
     html += "</div>";
     if (champion) { html += "<div class='champ'>🏆 Champions: " + teams[champion] + "</div>"; }
     return html;
   }
+
   function esc(t) {
     return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
@@ -717,7 +727,7 @@
         html += "<p class='owner'>Owner: <b style='color:var(--text)'>" + (s.owner ? esc(s.owner) : "TBA") + "</b></p>";
         if (list.length) {
           html += "<p class='legend'>" + list.length + " players</p><ol class='plist'>" +
-                  list.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol>";
+                  list.map(function (p) { return "<li>" + esc(p) + goalTag(code, p) + "</li>"; }).join("") + "</ol>";
         } else {
           html += "<p class='legend'>Squad not added yet.</p>";
         }
@@ -924,7 +934,7 @@
     html += "</div></div>";
 
     html += "<div class='card'><h3>Squad (" + list.length + " players)</h3>";
-    html += list.length ? "<ol class='plist'>" + list.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol>"
+    html += list.length ? "<ol class='plist'>" + list.map(function (p) { return "<li>" + esc(p) + goalTag(code, p) + "</li>"; }).join("") + "</ol>"
                         : "<p class='legend'>Squad not added yet.</p>";
     return html + "</div>";
   }
@@ -1017,6 +1027,66 @@
     return html;
   }
 
+    // =============== PLAYER STATS ===============
+  function goalMap() {
+    const map = {};
+    goalLog.forEach(function (g) {
+      const k = g.team + "|" + g.player;
+      map[k] = (map[k] || 0) + g.goals;
+    });
+    return map;
+  }
+
+  function goalTag(team, player) {
+    const n = goalMap()[team + "|" + player] || 0;
+    return n ? " <span class='gt'>⚽ " + n + "</span>" : "";
+  }
+
+  function pageStats() {
+    const map = goalMap();
+    let rows = [];
+    const seen = {};
+    Object.keys(teams).forEach(function (c) {
+      playerList((squads[c] || { players: "" }).players).forEach(function (p) {
+        const k = c + "|" + p;
+        if (seen[k]) { return; }
+        seen[k] = true;
+        rows.push({ team: c, player: p, goals: map[k] || 0, extra: false });
+      });
+    });
+    // goals logged for a name that is no longer in the squad list are kept visible
+    Object.keys(map).forEach(function (k) {
+      if (!seen[k]) {
+        const i = k.indexOf("|");
+        rows.push({ team: k.slice(0, i), player: k.slice(i + 1), goals: map[k], extra: true });
+      }
+    });
+
+    if (statTeam !== "all") { rows = rows.filter(function (r) { return r.team === statTeam; }); }
+    rows.sort(function (a, b) {
+      if (statSort === "name") { return a.player.localeCompare(b.player); }
+      return b.goals - a.goals || a.player.localeCompare(b.player);
+    });
+
+    const totalGoals = rows.reduce(function (s, r) { return s + r.goals; }, 0);
+    let html = "<div class='row'><select onchange=\"statTeam=this.value;render()\"><option value='all'>All teams</option>" +
+      Object.keys(teams).map(function (c) { return "<option value='" + c + "'" + (c === statTeam ? " selected" : "") + ">" + teams[c] + "</option>"; }).join("") + "</select>" +
+      "<select onchange=\"statSort=this.value;render()\"><option value='goals'" + (statSort === "goals" ? " selected" : "") + ">Sort: most goals</option>" +
+      "<option value='name'" + (statSort === "name" ? " selected" : "") + ">Sort: name A-Z</option></select>" +
+      "<span class='legend'>" + rows.length + " players · " + totalGoals + " goals logged</span></div>";
+
+    if (!rows.length) {
+      return html + "<div class='card'><p class='legend'>No players yet. Squads are added on the Squads tab.</p></div>";
+    }
+    html += "<div class='card scroll'><table><tr><th>#</th><th class='left'>Player</th><th class='left'>Team</th><th>Goals</th></tr>";
+    rows.forEach(function (r, i) {
+      html += "<tr><td>" + (i + 1) + "</td><td class='left'>" + esc(r.player) + (r.extra ? " <span class='legend'>(not in squad list)</span>" : "") +
+        "</td><td class='left'><span class='badge'>" + initials(teams[r.team] || r.team) + "</span>" + (teams[r.team] || r.team) + "</td>" +
+        "<td class='pts'>" + r.goals + "</td></tr>";
+    });
+    return html + "</table></div>";
+  }
+
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
       "<li><b>Format:</b> 10 teams, home and away. Each team plays every other team twice, so 18 matches each.</li>" +
@@ -1024,7 +1094,7 @@
       "<li><b>Points:</b> Win 3, draw 1, loss 0.</li>" +
       "<li><b>Ranking:</b> Points, then goal difference, then goals scored.</li>" +
       "<li><b>League Shield:</b> The team in 1st place after the league stage wins the shield.</li>" +
-      "<li><b>Playoffs (IPL format):</b> Top 4 qualify. Qualifier 1: 1st vs 2nd (winner to the Final). Eliminator: 3rd vs 4th (loser out). Qualifier 2: loser of Q1 vs winner of the Eliminator. Final: winner of Q1 vs winner of Q2.</li>" +
+      "<li><b>Playoffs (IPL format):</b> Top 6 qualify. Qualifier 1: 1st vs 2nd (winner to the Final). Knockout stage: 3rd vs 6th and 4th vs 5th (winners to Eliminator 1). Eliminator 1: the two knockout winners (loser out). Qualifier 2: loser of Qualifier 1 vs winner of Eliminator 1. Final: winner of Qualifier 1 vs winner of Qualifier 2.</li>" +
       "<li><b>Results:</b> Both players confirm the score after full time and share a screenshot in the group chat. The admin enters the result on this site.</li>" +
       "<li><b>Match time:</b> 8 minutes.</li>" +
       "<li><b>Extra time:</b> No extra time in league matches. Extra time is used only in the playoffs.</li>" +
@@ -1078,7 +1148,7 @@
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = pages[currentTab]();
 
