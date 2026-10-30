@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eFootball Friends League Season 1</title>
+<title>eFootball Friends League Season 2</title>
 
 <meta name="description" content="Live standings, fixtures, playoffs and squads for the eFootball Friends League, Season 1.">
 
@@ -31,6 +31,7 @@
 <!-- Supabase library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>try { if (localStorage.getItem("theme") === "light") { document.documentElement.setAttribute("data-theme", "light"); } } catch (e) {}</script>
+<script>document.documentElement.setAttribute("data-season", "2");</script>
 
 <style>
   :root { --bg:#0b1220; --card:#131c2e; --line:#243049; --text:#e8edf5; --muted:#94a3b8;
@@ -289,20 +290,73 @@
 
   /* ===== PLAYER STATS ===== */
   .gt { display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; background:rgba(245,179,1,.15); color:var(--gold); font-size:12px; font-weight:700; }
+
+  /* ===== HALL OF FAME ===== */
+  .hall { border-color:var(--gold); background:linear-gradient(135deg, rgba(245,179,1,.07), var(--card) 55%); }
+  .hall h2 { margin:0 0 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .tag { font-family:"Inter",sans-serif; font-size:12px; padding:3px 10px; border-radius:999px; font-weight:600; }
+  .tdone { background:rgba(245,179,1,.15); color:var(--gold); }
+  .tlive { background:rgba(46,204,136,.15); color:var(--accent); }
+  .hgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+  .hbox { background:var(--bg); border:1px solid var(--line); border-top:3px solid var(--gold); border-radius:12px; padding:14px; animation: fadeUp .5s ease both; transition: transform .2s; }
+  .hbox:hover { transform: translateY(-3px); }
+  .hbox .ic { font-size:30px; }
+  .hbox .ht { font-family:"Oswald",sans-serif; letter-spacing:.5px; color:var(--gold); font-size:17px; }
+  .hbox small { display:block; color:var(--muted); margin-bottom:8px; }
+  .hbox .hm { font-family:"Oswald",sans-serif; font-size:22px; line-height:1.25; margin-bottom:4px; }
+
+  /* ===== SEASON SELECTOR ===== */
+  .sbar { display:inline-block; margin-top:10px; color:#f1d6d6; font-size:13px; }
+  .sbar select { width:auto; margin-left:6px; background:rgba(0,0,0,.3); color:#fff; border:1px solid rgba(255,255,255,.3); }
+
+  /* ===== SEASON 2 THEME (violet + cyan) ===== */
+  :root[data-season="2"] { --bg:#0e0a1c; --card:#171030; --line:#2c2150; --text:#ece8f8; --muted:#a69cc4; --accent:#22d3ee; }
+  :root[data-season="2"][data-theme="light"] { --bg:#f4f1fb; --card:#ffffff; --line:#ddd6ef; --text:#1a1233; --muted:#6b628a; --accent:#0891b2; }
+
+  :root[data-season="2"] header { background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 70px, transparent 70px 140px),
+    linear-gradient(135deg, #2a0a5e, #5b21b6 50%, #0e0a1c); }
+  :root[data-season="2"] header p, :root[data-season="2"] .sbar { color:#e3d9ff; }
+
+  :root[data-season="2"] tr.top4 { background:rgba(34,211,238,.08); }
+  :root[data-season="2"] .btn:hover { box-shadow:0 6px 16px rgba(34,211,238,.35); }
+  :root[data-season="2"] .rounds button.on { box-shadow:0 0 14px rgba(34,211,238,.5); }
+  :root[data-season="2"] .tlive { background:rgba(34,211,238,.15); }
+  :root[data-season="2"] #intro::before { border-color:rgba(34,211,238,.3); }
+  :root[data-season="2"] #intro::after { background:rgba(34,211,238,.2); }
+  :root[data-season="2"] .count span { text-shadow:0 0 40px rgba(34,211,238,.55); }
+
+  /* dark mode details */
+  :root[data-season="2"]:not([data-theme="light"]) .badge { background:#251a47; }
+  :root[data-season="2"]:not([data-theme="light"]) .ticker { background:#07041a; }
+  :root[data-season="2"]:not([data-theme="light"]) .tick em { background:#0b2f38; }
+  :root[data-season="2"]:not([data-theme="light"]) .score { background:#07041a; }
+  :root[data-season="2"]:not([data-theme="light"]) .btn,
+  :root[data-season="2"]:not([data-theme="light"]) .rounds button.on { color:#04222a; }
+  :root[data-season="2"]:not([data-theme="light"]) #intro { background: radial-gradient(circle at center, #24104d 0%, #0e0a1c 70%); }
+
+  /* light mode details */
+  :root[data-season="2"][data-theme="light"] .badge { background:#e0f4f8; }
+  :root[data-season="2"][data-theme="light"] .ticker { background:#ece8f8; }
+  :root[data-season="2"][data-theme="light"] .tick em { background:#cdeff5; }
+  :root[data-season="2"][data-theme="light"] .score { background:#efeaf9; }
+  :root[data-season="2"][data-theme="light"] #intro { background: radial-gradient(circle at center, #e6e0f7 0%, #f4f1fb 70%); }
+  
 </style>
 </head>
 <body>
 
 <div id="intro">
-  <div class="i-top">🛡️ eFootball League Season 1</div>
+  <div <span class="seasonName">eFootball League Season 2</span></div>
   <div class="count" id="count"></div>
   <div class="i-skip">Tap to skip</div>
 </div>
 
 <header>
   <div class="wrap">
-    <h1><span class="spin">🛡️</span> eFootball League Season 1</h1>
+    <h1><span class="spin">🛡️</span> eFootball League <span class="seasonName">Season 2</span></h1>
     <p>10 teams · home &amp; away · 18 rounds · top 6 to the playoffs</p>
+    <label class="sbar">Season <select id="seasonSel" onchange="switchSeason(this.value)"></select></label>
     <button id="themeBtn" class="themebtn" onclick="toggleTheme()"></button>
   </div>
 </header>
@@ -318,7 +372,7 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // =============== DATA ===============
-  const teams = {
+  let teams = {
     T1: "Chelsea", T2: "Manchester United", T3: "AC Milan", T4: "Inter Milan", T5: "Borussia Dortmund",
     T6: "Barcelona", T7: "Arsenal", T8: "Manchester City", T9: "Melbourne City", T10: "Liverpool"
   };
@@ -328,7 +382,7 @@
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Golden Boot", "Player Stats", "Rules", "Admin"];
+  const tabs = ["Standings", "Fixtures", "Playoffs", "Squads", "Records", "Golden Boot", "Player Stats", "Hall of Fame", "Rules", "Admin"];
   let currentTab = "Standings";
   let currentRound = 0;
   let currentTeam = "T1";
@@ -352,18 +406,64 @@
     const g = await sb.from("goals").select("*");
     if (r.error || p.error || s.error) { setStatus("Could not load data. Check your internet and refresh."); return; }
     setStatus("");
-    results = {};
-    r.data.forEach(function (row) { results[row.id] = { h: row.home_goals, a: row.away_goals }; });
-    playoffWinners = {};
-    p.data.forEach(function (row) { playoffWinners[row.stage] = row.winner; });
-    squads = {};
-    s.data.forEach(function (row) { squads[row.team] = { owner: row.owner || "", players: row.players || "" }; });
-    goalLog = g.error ? [] : g.data;
+    allResults = r.data; allPlayoffs = p.data; allSquads = s.data; allGoals = g.error ? [] : g.data;
+    filterSeasonData();
     render();
   }
 
+  function applySeason() {
+    teams = SEASONS[currentSeason].teams;
+    SCHEDULE = SEASONS[currentSeason].schedule;
+    document.documentElement.setAttribute("data-season", currentSeason);
+    document.title = "eFootball Friends League · " + SEASONS[currentSeason].name;
+    document.querySelectorAll(".seasonName").forEach(function (el) { el.textContent = SEASONS[currentSeason].name; });
+  }
+
+  function qualifiers() { return SEASONS[currentSeason].playoff === "four" ? 4 : 6; }
+
+  function filterSeasonData() {
+    results = {};
+    allResults.forEach(function (r) { if ((r.season || 1) === currentSeason) { results[r.id] = { h: r.home_goals, a: r.away_goals }; } });
+    playoffWinners = {};
+    allPlayoffs.forEach(function (p) { if ((p.season || 1) === currentSeason) { playoffWinners[p.stage] = p.winner; } });
+    squads = {};
+    allSquads.forEach(function (s) { if ((s.season || 1) === currentSeason) { squads[s.team] = { owner: s.owner || "", players: s.players || "" }; } });
+    goalLog = allGoals.filter(function (g) { return (g.season || 1) === currentSeason; });
+  }
+
+  function buildSeasonSelect() {
+    const nos = Object.keys(SEASONS).map(Number).sort(function (a, b) { return b - a; });
+    document.getElementById("seasonSel").innerHTML = nos.map(function (n) {
+      return "<option value='" + n + "'" + (n === currentSeason ? " selected" : "") + ">" + esc(SEASONS[n].name) + "</option>";
+    }).join("");
+  }
+
+  function switchSeason(n) {
+    currentSeason = Number(n);
+    applySeason();
+    filterSeasonData();
+    currentRound = 0;
+    bootTeam = Object.keys(teams)[0];
+    currentTeam = Object.keys(teams)[0];
+    if (currentTab === "Team") { currentTab = "Standings"; }
+    render();
+  }
+
+  async function copySquads() {
+    if (!isAdmin) { return; }
+    const prev = currentSeason - 1;
+    const rows = allSquads.filter(function (r) { return (r.season || 1) === prev; });
+    if (!rows.length) { setStatus("No squads found in Season " + prev + "."); return; }
+    if (!confirm("Copy " + rows.length + " squads from Season " + prev + " into Season " + currentSeason + "? This replaces squads already entered for Season " + currentSeason + ".")) { return; }
+    const payload = rows.map(function (r) { return { season: currentSeason, team: r.team, owner: r.owner, players: r.players }; });
+    const res = await sb.from("squads").upsert(payload, { onConflict: "season,team" });
+    if (res.error) { setStatus("Could not copy: " + res.error.message); return; }
+    await loadData();
+    setStatus("Squads copied from Season " + prev + ".");
+  }
+
     // =============== FIXTURE LIST (fixed, checked: no 3 home or away games in a row) ===============
-  const SCHEDULE = [
+  let SCHEDULE = [
     ["T10-T7", "T8-T9", "T6-T3", "T4-T2", "T1-T5"],  // Round 1
     ["T6-T7", "T8-T4", "T1-T10", "T5-T9", "T2-T3"],  // Round 2
     ["T7-T5", "T2-T1", "T3-T4", "T9-T6", "T10-T8"],  // Round 3
@@ -383,6 +483,39 @@
     ["T9-T8", "T5-T1", "T2-T4", "T3-T6", "T7-T10"],  // Round 17
     ["T9-T5", "T7-T6", "T4-T8", "T10-T1", "T3-T2"]   // Round 18
   ];
+
+  // each season has its own teams, fixtures and playoff format ("six" or "four")
+  const TEAMS_S2 = Object.assign({}, teams, {
+    // change Season 2 team names here, for example: T3: "Juventus",
+  });
+
+  const SCHEDULE_S2 = [
+    ["T5-T9", "T8-T6", "T7-T2", "T1-T10", "T4-T3"],  // Round 1
+    ["T2-T5", "T6-T1", "T4-T9", "T8-T3", "T7-T10"],  // Round 2
+    ["T3-T5", "T10-T4", "T1-T7", "T2-T8", "T9-T6"],  // Round 3
+    ["T5-T7", "T8-T10", "T3-T9", "T4-T6", "T1-T2"],  // Round 4
+    ["T6-T5", "T2-T9", "T8-T1", "T7-T4", "T10-T3"],  // Round 5
+    ["T4-T5", "T1-T3", "T2-T10", "T6-T7", "T9-T8"],  // Round 6
+    ["T5-T1", "T4-T2", "T3-T6", "T10-T9", "T7-T8"],  // Round 7
+    ["T8-T5", "T7-T9", "T6-T10", "T2-T3", "T1-T4"],  // Round 8
+    ["T5-T10", "T3-T7", "T4-T8", "T9-T1", "T6-T2"],  // Round 9
+    ["T2-T6", "T7-T3", "T10-T5", "T1-T9", "T8-T4"],  // Round 10
+    ["T10-T6", "T9-T7", "T3-T2", "T5-T8", "T4-T1"],  // Round 11
+    ["T9-T10", "T2-T4", "T6-T3", "T1-T5", "T8-T7"],  // Round 12
+    ["T3-T1", "T8-T9", "T10-T2", "T7-T6", "T5-T4"],  // Round 13
+    ["T9-T2", "T3-T10", "T1-T8", "T4-T7", "T5-T6"],  // Round 14
+    ["T7-T5", "T6-T4", "T9-T3", "T10-T8", "T2-T1"],  // Round 15
+    ["T5-T3", "T7-T1", "T4-T10", "T6-T9", "T8-T2"],  // Round 16
+    ["T10-T7", "T3-T8", "T1-T6", "T9-T4", "T5-T2"],  // Round 17
+    ["T9-T5", "T3-T4", "T6-T8", "T2-T7", "T10-T1"]   // Round 18
+  ];
+
+  const SEASONS = {
+    1: { name: "Season 1", teams: teams, schedule: SCHEDULE, playoff: "six" },
+    2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six" }
+  };
+  let currentSeason = Math.max.apply(null, Object.keys(SEASONS).map(Number));
+
   // each entry is "HOME-AWAY", for example "T10-T7" means T10 is at home against T7
 
   function buildFixtures() {
@@ -434,11 +567,11 @@
     const a = document.getElementById("a-" + id).value;
     results[id] = { h: h, a: a };
     if (h === "" && a === "") {
-      const res = await sb.from("results").delete().eq("id", id);
+      const res = await sb.from("results").delete().eq("season", currentSeason).eq("id", id);
       delete results[id];
       if (res.error) { setStatus("Could not delete: " + res.error.message); }
     } else if (h !== "" && a !== "") {
-      const res = await sb.from("results").upsert({ id: id, home_goals: Number(h), away_goals: Number(a) });
+      const res = await sb.from("results").upsert({ season: currentSeason, id: id, home_goals: Number(h), away_goals: Number(a) }, { onConflict: "season,id" });
       setStatus(res.error ? "Could not save: " + res.error.message : "");
     }
     render();
@@ -449,10 +582,10 @@
     let res;
     if (code === "") {
       delete playoffWinners[stage];
-      res = await sb.from("playoffs").delete().eq("stage", stage);
+      res = await sb.from("playoffs").delete().eq("season", currentSeason).eq("stage", stage);
     } else {
       playoffWinners[stage] = code;
-      res = await sb.from("playoffs").upsert({ stage: stage, winner: code });
+      res = await sb.from("playoffs").upsert({ season: currentSeason, stage: stage, winner: code }, { onConflict: "season,stage" });
     }
     setStatus(res.error ? "Could not save: " + res.error.message : "");
     render();
@@ -556,13 +689,13 @@
     rows.forEach(function (r, i) {
       const gd = r.gf - r.ga;
       const form = r.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
-      html += "<tr class='" + (i < 6 ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
+      html += "<tr class='" + (i < qualifiers() ? "top4" : "") + "'><td>" + (i + 1) + "</td>" +
         "<td class='left'><span class='badge'>" + initials(r.name) + "</span><a class='tl' onclick=\"openTeam('" + r.code + "')\">" + r.name + "</a>" + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
         "<td>" + r.played + "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost + "</td>" +
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
     });
-    html += "</table></div><p class='legend'>Green bar = playoff places (top 6). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
+    html += "</table></div><p class='legend'>Green bar = playoff places (top " + qualifiers() + "). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
     html += awardsCard(rows, badges);
     return html;
   }
@@ -665,7 +798,29 @@
     return html + "</div>";
   }
 
+    function pagePlayoffsFour() {
+    const table = buildStandings();
+    const done = table.every(function (r) { return r.played === 18; });
+    const top = table.slice(0, 4).map(function (r) { return r.code; });
+    const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3];
+    const q1Winner = validWinner("q1", t1, t2);
+    const q1Loser = q1Winner ? (q1Winner === t1 ? t2 : t1) : null;
+    const elWinner = validWinner("el", t3, t4);
+    const q2Winner = validWinner("q2", q1Loser, elWinner);
+    const champion = validWinner("f", q1Winner, q2Winner);
+    let html = "<p class='legend'>" + (done ? "League stage complete. The playoff line-up is set." :
+               "Provisional: based on the current top 4. Final after all 18 rounds.") + "</p><div class='po'>";
+    html += matchCard("q1", "Qualifier 1", "1st vs 2nd. Winner goes to the Final", t1, t2, "#2ecc88");
+    html += matchCard("el", "Eliminator", "3rd vs 4th. Loser is out", t3, t4, "#ef4444");
+    html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator", q1Loser, elWinner, "#3b82f6");
+    html += matchCard("f", "Final", "Winner of Q1 vs winner of Q2", q1Winner, q2Winner, "#f5b301");
+    html += "</div>";
+    if (champion) { html += "<div class='champ'>🏆 Champions: " + teams[champion] + "</div>"; }
+    return html;
+  }
+  
     function pagePlayoffs() {
+    if (SEASONS[currentSeason].playoff === "four") { return pagePlayoffsFour(); }  
     const table = buildStandings();
     const done = table.every(function (r) { return r.played === 18; });
     const top = table.slice(0, 6).map(function (r) { return r.code; });
@@ -705,7 +860,7 @@
     const owner = document.getElementById("own-" + code).value.trim();
     const players = document.getElementById("pl-" + code).value;
     const count = playerList(players).length;
-    const res = await sb.from("squads").upsert({ team: code, owner: owner, players: players });
+    const res = await sb.from("squads").upsert({ season: currentSeason, team: code, owner: owner, players: players }, { onConflict: "season,team" });
     if (res.error) { setStatus("Could not save: " + res.error.message); return; }
     squads[code] = { owner: owner, players: players };
     setStatus(teams[code] + " saved. " + ((count < 23 || count > 25) ? "Note: squad has " + count + " players (expected 23 to 25)." : count + " players."));
@@ -959,7 +1114,7 @@
     const round = document.getElementById("br").value;
     if (!player) { setStatus("Pick a player first (add the squad in the Squads tab)."); return; }
     if (!goals || goals < 1) { setStatus("Enter at least 1 goal."); return; }
-    const row = { team: bootTeam, player: player, goals: goals };
+    const row = { season: currentSeason, team: bootTeam, player: player, goals: goals };
     if (round) { row.round = Number(round); }
     const res = await sb.from("goals").insert(row).select();
     if (res.error) { setStatus("Could not save: " + res.error.message); return; }
@@ -1086,6 +1241,89 @@
     });
     return html + "</table></div>";
   }
+  // =============== HALL OF FAME ===============
+  let allResults = [], allPlayoffs = [], allGoals = [], allSquads = [];
+
+  function seasonSummary(no) {
+    const cfg = SEASONS[no];
+    const res = {};
+    allResults.forEach(function (r) { if ((r.season || 1) === no) { res[r.id] = r; } });
+
+    const rows = {};
+    Object.keys(cfg.teams).forEach(function (c) { rows[c] = { code: c, name: cfg.teams[c], p: 0, pts: 0, gf: 0, ga: 0 }; });
+    let total = 0, played = 0;
+    cfg.schedule.forEach(function (round, ri) {
+      round.forEach(function (code, i) {
+        total++;
+        const t = code.split("-");
+        const r = res["R" + (ri + 1) + "-" + (i + 1)];
+        if (!r || r.home_goals === null || r.away_goals === null) { return; }
+        played++;
+        const h = rows[t[0]], a = rows[t[1]], hg = r.home_goals, ag = r.away_goals;
+        h.p++; a.p++; h.gf += hg; h.ga += ag; a.gf += ag; a.ga += hg;
+        if (hg > ag) { h.pts += 3; } else if (hg < ag) { a.pts += 3; } else { h.pts++; a.pts++; }
+      });
+    });
+    const table = Object.keys(rows).map(function (c) { return rows[c]; }).sort(function (x, y) {
+      return y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf;
+    });
+    const top = table.map(function (r) { return r.code; });
+
+    const pw = {};
+    allPlayoffs.forEach(function (p) { if ((p.season || 1) === no) { pw[p.stage] = p.winner; } });
+    function ok(stage, a, b) { const w = pw[stage]; return (a && b && (w === a || w === b)) ? w : null; }
+    const q1w = ok("q1", top[0], top[1]);
+    const q1l = q1w ? (q1w === top[0] ? top[1] : top[0]) : null;
+    let q2w;
+    if (cfg.playoff === "six") {
+      const k1 = ok("ko1", top[2], top[5]), k2 = ok("ko2", top[3], top[4]);
+      q2w = ok("q2", q1l, ok("el1", k1, k2));
+    } else {
+      q2w = ok("q2", q1l, ok("el", top[2], top[3]));
+    }
+    const champion = ok("f", q1w, q2w);
+    const runnerUp = champion ? (q1w === champion ? q2w : q1w) : null;
+
+    const sums = {};
+    allGoals.forEach(function (g) {
+      if ((g.season || 1) === no) { const k = g.team + "|" + g.player; sums[k] = (sums[k] || 0) + g.goals; }
+    });
+    let best = 0, boot = [];
+    Object.keys(sums).forEach(function (k) {
+      if (sums[k] > best) { best = sums[k]; boot = [k]; } else if (sums[k] === best) { boot.push(k); }
+    });
+    boot = boot.map(function (k) {
+      const i = k.indexOf("|");
+      return { team: cfg.teams[k.slice(0, i)] || k.slice(0, i), player: k.slice(i + 1) };
+    });
+    return { name: cfg.name, played: played, total: total, complete: played === total, shield: table[0],
+             champion: champion ? cfg.teams[champion] : null, runnerUp: runnerUp ? cfg.teams[runnerUp] : null,
+             boot: boot, bootGoals: best };
+  }
+
+  function pageHall() {
+    const nos = Object.keys(SEASONS).map(Number).sort(function (a, b) { return b - a; });
+    function box(icon, title, note, main, sub) {
+      return "<div class='hbox'><span class='ic'>" + icon + "</span><div class='ht'>" + title + "</div><small>" + note + "</small>" +
+             "<div class='hm'>" + (main ? main : "<span class='legend'>Not decided yet</span>") + "</div>" +
+             (sub ? "<div class='legend'>" + sub + "</div>" : "") + "</div>";
+    }
+    let html = "<p class='legend'>The winners of every season.</p>";
+    nos.forEach(function (n) {
+      const s = seasonSummary(n);
+      const done = s.complete && s.champion;
+      const started = s.played > 0;
+      html += "<div class='card hall'><h2>" + esc(s.name) + " <span class='tag " + (done ? "tdone" : "tlive") + "'>" + (done ? "Complete" : "In progress") + "</span></h2><div class='hgrid'>";
+      html += box("🛡️", "League Shield", s.complete ? "Winners" : "Current leaders",
+                  started ? esc(s.shield.name) : null, started ? s.shield.pts + " points from " + s.shield.p + " matches" : "");
+      html += box("🏆", "Champions", "Playoff winners", s.champion ? esc(s.champion) : null, s.runnerUp ? "Runners-up: " + esc(s.runnerUp) : "");
+      html += box("👟", "Golden Boot", s.complete ? "Top scorer" : "Current leader",
+                  s.boot.length ? s.boot.map(function (b) { return esc(b.player) + " <span class='legend'>(" + esc(b.team) + ")</span>"; }).join("<br>") : null,
+                  s.boot.length ? s.bootGoals + " goals" : "");
+      html += "</div></div>";
+    });
+    return html;
+  }
 
   function pageRules() {
     return "<div class='card'><h2>League rules</h2><ol>" +
@@ -1109,8 +1347,9 @@
 
   function pageAdmin() {
     if (isAdmin) {
-      return "<div class='card'><h2>Admin</h2><p>You are logged in. Enter scores in <b>Fixtures</b> and pick winners in <b>Playoffs</b>. Everyone sees the changes.</p>" +
-             "<button class='btn out' onclick='logout()'>Log out</button></div>";
+      return "<div class='card'><h2>Admin</h2><p>You are logged in. Enter scores in <b>Fixtures</b> and pick winners in <b>Playoffs</b>. Everyone sees the changes. You are editing <b>" + esc(SEASONS[currentSeason].name) + "</b>.</p>" +
+        (currentSeason > 1 ? "<p><button class='btn out' onclick='copySquads()'>Copy squads from Season " + (currentSeason - 1) + "</button> <span class='legend'>(use only if the teams are the same)</span></p>" : "") +
+         "<button class='btn out' onclick='logout()'>Log out</button></div>";
     }
     return "<div class='card login'><h2>Admin login</h2><p class='legend'>Only the league admin can enter results.</p>" +
            "<input id='em' type='email' placeholder='Email' autocomplete='username'>" +
@@ -1148,7 +1387,7 @@
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
-    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = pages[currentTab]();
 
@@ -1165,6 +1404,8 @@
 
   // =============== START ===============
   async function start() {
+    applySeason();
+    buildSeasonSelect();
     const s = await sb.auth.getSession();
     isAdmin = !!(s.data && s.data.session);
     render();
