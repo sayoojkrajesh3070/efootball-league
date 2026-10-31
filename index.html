@@ -347,7 +347,7 @@
 <body>
 
 <div id="intro">
-  <div <span class="seasonName">eFootball League Season 2</span></div>
+  <div class="i-top">eFootball League · <span class="seasonName">Season 2</span></div>
   <div class="count" id="count"></div>
   <div class="i-skip">Tap to skip</div>
 </div>
@@ -355,7 +355,7 @@
 <header>
   <div class="wrap">
     <h1><span class="spin">🛡️</span> eFootball League <span class="seasonName">Season 2</span></h1>
-    <p>10 teams · home &amp; away · 18 rounds · top 6 to the playoffs</p>
+    <p id="subTitle">10 teams · home &amp; away · 18 rounds · top 6 to the playoffs</p>
     <label class="sbar">Season <select id="seasonSel" onchange="switchSeason(this.value)"></select></label>
     <button id="themeBtn" class="themebtn" onclick="toggleTheme()"></button>
   </div>
@@ -411,12 +411,19 @@
     render();
   }
 
+  function seasonTabs() { return SEASONS[currentSeason].tabs || tabs; }
+
   function applySeason() {
     teams = SEASONS[currentSeason].teams;
     SCHEDULE = SEASONS[currentSeason].schedule;
     document.documentElement.setAttribute("data-season", currentSeason);
     document.title = "eFootball Friends League · " + SEASONS[currentSeason].name;
     document.querySelectorAll(".seasonName").forEach(function (el) { el.textContent = SEASONS[currentSeason].name; });
+    const sp = document.getElementById("subTitle");
+    if (sp) {
+      if (!sp.dataset.orig) { sp.dataset.orig = sp.textContent; }
+      sp.textContent = SEASONS[currentSeason].sub || sp.dataset.orig;
+    }
   }
 
   function qualifiers() { return SEASONS[currentSeason].playoff === "four" ? 4 : 6; }
@@ -445,7 +452,7 @@
     currentRound = 0;
     bootTeam = Object.keys(teams)[0];
     currentTeam = Object.keys(teams)[0];
-    if (currentTab === "Team") { currentTab = "Standings"; }
+    if (seasonTabs().indexOf(currentTab) === -1) { currentTab = "Standings"; }
     render();
   }
 
@@ -510,11 +517,28 @@
     ["T9-T5", "T3-T4", "T6-T8", "T2-T7", "T10-T1"]   // Round 18
   ];
 
+  const TEAMS_S3 = Object.assign({}, TEAMS_S2);   // same 10 teams
+
+  const SCHEDULE_S3 = [
+    ["T4-T10", "T8-T9", "T3-T5", "T1-T7", "T6-T2"],  // Round 1
+    ["T4-T5", "T9-T1", "T2-T10", "T6-T8", "T7-T3"],  // Round 2
+    ["T7-T4", "T3-T6", "T8-T2", "T10-T1", "T5-T9"],  // Round 3
+    ["T1-T4", "T2-T5", "T6-T9", "T10-T7", "T8-T3"],  // Round 4
+    ["T4-T6", "T7-T2", "T3-T1", "T5-T8", "T9-T10"],  // Round 5
+    ["T8-T4", "T3-T10", "T9-T7", "T5-T6", "T1-T2"],  // Round 6
+    ["T4-T9", "T10-T5", "T1-T8", "T2-T3", "T6-T7"],  // Round 7
+    ["T3-T4", "T7-T8", "T10-T6", "T9-T2", "T5-T1"],  // Round 8
+    ["T2-T4", "T1-T6", "T7-T5", "T9-T3", "T8-T10"]   // Round 9
+  ];
+
   const SEASONS = {
     1: { name: "Season 1", teams: teams, schedule: SCHEDULE, playoff: "six" },
-    2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six" }
+    2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six" },
+    3: { name: "Mini League", teams: TEAMS_S3, schedule: SCHEDULE_S3, playoff: "four", single: true,
+         tabs: ["Standings", "Fixtures", "Playoffs", "Golden Boot", "Admin"],
+         sub: "10 teams · one match each · 9 rounds · top 4 to the playoffs" }
   };
-  let currentSeason = Math.max.apply(null, Object.keys(SEASONS).map(Number));
+  let currentSeason = 2;   // the season shown when the site opens
 
   // each entry is "HOME-AWAY", for example "T10-T7" means T10 is at home against T7
 
@@ -682,7 +706,7 @@
     function pageStandings() {
     const rows = buildStandings();
     const badges = computeBadges(rows);
-    const done = rows.every(function (r) { return r.played === 18; });
+    const done = rows.every(function (r) { return r.played === SCHEDULE.length; });
     let html = "";
     if (done) { html += "<div class='shield'>🛡️ League Shield winners: " + rows[0].name + "</div>"; }
     html += "<div class='card scroll'><table><tr><th>#</th><th class='left'>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th></tr>";
@@ -695,7 +719,7 @@
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
     });
-    html += "</table></div><p class='legend'>Green bar = playoff places (top " + qualifiers() + "). 1st place after 18 rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
+    html += "</table></div><p class='legend'>Green bar = playoff places (top " + qualifiers() + "). 1st place after " + SCHEDULE.length + " rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
     html += awardsCard(rows, badges);
     return html;
   }
@@ -756,11 +780,11 @@
     function pageFixtures() {
     const rounds = buildFixtures();
     let html = "<div class='rounds'>";
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < SCHEDULE.length; i++) {
       html += "<button class='" + (i === currentRound ? "on" : "") + "' onclick='currentRound=" + i + ";render()'>R" + (i + 1) + "</button>";
     }
     html += "</div><div class='card'><h3>Round " + (currentRound + 1) + " <span style='color:var(--muted);font-size:13px;font-weight:400'>" +
-            (currentRound < 9 ? "First leg" : "Second leg") + "</span></h3>";
+            (SEASONS[currentSeason].single ? "" : (currentRound < SCHEDULE.length / 2 ? "First leg" : "Second leg")) + "</span></h3>";
     rounds[currentRound].forEach(function (m) {
       const r = results[m.id] || { h: "", a: "" };
       const h = (r.h === null) ? "" : r.h, a = (r.a === null) ? "" : r.a;
@@ -800,7 +824,7 @@
 
     function pagePlayoffsFour() {
     const table = buildStandings();
-    const done = table.every(function (r) { return r.played === 18; });
+    const done = table.every(function (r) { return r.played === SCHEDULE.length; });
     const top = table.slice(0, 4).map(function (r) { return r.code; });
     const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3];
     const q1Winner = validWinner("q1", t1, t2);
@@ -809,7 +833,7 @@
     const q2Winner = validWinner("q2", q1Loser, elWinner);
     const champion = validWinner("f", q1Winner, q2Winner);
     let html = "<p class='legend'>" + (done ? "League stage complete. The playoff line-up is set." :
-               "Provisional: based on the current top 4. Final after all 18 rounds.") + "</p><div class='po'>";
+               "Provisional: based on the current top 4. Final after all " + SCHEDULE.length + " rounds.") + "</p><div class='po'>";
     html += matchCard("q1", "Qualifier 1", "1st vs 2nd. Winner goes to the Final", t1, t2, "#2ecc88");
     html += matchCard("el", "Eliminator", "3rd vs 4th. Loser is out", t3, t4, "#ef4444");
     html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator", q1Loser, elWinner, "#3b82f6");
@@ -822,7 +846,7 @@
     function pagePlayoffs() {
     if (SEASONS[currentSeason].playoff === "four") { return pagePlayoffsFour(); }  
     const table = buildStandings();
-    const done = table.every(function (r) { return r.played === 18; });
+    const done = table.every(function (r) { return r.played === SCHEDULE.length; });
     const top = table.slice(0, 6).map(function (r) { return r.code; });
     const t1 = top[0], t2 = top[1], t3 = top[2], t4 = top[3], t5 = top[4], t6 = top[5];
 
@@ -835,7 +859,7 @@
     const champion = validWinner("f", q1Winner, q2Winner);
 
     let html = "<p class='legend'>" + (done ? "League stage complete. The playoff line-up is set." :
-               "Provisional: based on the current top 6. Final after all 18 rounds.") + "</p><div class='po'>";
+               "Provisional: based on the current top 6. Final after all " + SCHEDULE.length + " rounds.") + "</p><div class='po'>";
     html += matchCard("q1", "Qualifier 1", "1st vs 2nd. Winner goes to the Final", t1, t2, "#2ecc88");
     html += matchCard("ko1", "Knockout 1", "3rd vs 6th. Winner goes to Eliminator 1", t3, t6, "#f97316");
     html += matchCard("ko2", "Knockout 2", "4th vs 5th. Winner goes to Eliminator 1", t4, t5, "#f97316");
@@ -1160,7 +1184,7 @@
           "<option value=''>Add this team's squad first</option>") + "</select>" +
         "<input id='bg' type='number' min='1' value='1' style='width:70px'>" +
         "<select id='br'><option value=''>Round (optional)</option>" +
-        Array.from({ length: 18 }, function (_, i) { return "<option value='" + (i + 1) + "'>Round " + (i + 1) + "</option>"; }).join("") + "</select>" +
+        Array.from({ length: SCHEDULE.length }, function (_, i) { return "<option value='" + (i + 1) + "'>Round " + (i + 1) + "</option>"; }).join("") + "</select>" +
         "<button class='btn' onclick='saveGoal()'>Add goals</button></div>";
 
       const rows = buildStandings();
@@ -1383,7 +1407,7 @@
   }
 
   function render() {
-    document.getElementById("nav").innerHTML = tabs.map(function (t) {
+    document.getElementById("nav").innerHTML = seasonTabs().map(function (t) {
       const label = (t === "Admin" && isAdmin) ? "Admin ✓" : t;
       return "<button class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
