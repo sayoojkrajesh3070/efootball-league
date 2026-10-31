@@ -341,7 +341,40 @@
   :root[data-season="2"][data-theme="light"] .tick em { background:#cdeff5; }
   :root[data-season="2"][data-theme="light"] .score { background:#efeaf9; }
   :root[data-season="2"][data-theme="light"] #intro { background: radial-gradient(circle at center, #e6e0f7 0%, #f4f1fb 70%); }
-  
+
+  /* ===== MINI LEAGUE THEME (ocean teal + coral) ===== */
+  :root[data-season="3"] { --bg:#08161a; --card:#0f2429; --line:#1f3d44; --text:#e6f4f2; --muted:#8fb3b0; --accent:#ff7a59; }
+  :root[data-season="3"][data-theme="light"] { --bg:#f0f7f7; --card:#ffffff; --line:#cfe3e3; --text:#0b2327; --muted:#4f7478; --accent:#e2552f; }
+
+  :root[data-season="3"] header { background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 70px, transparent 70px 140px),
+    linear-gradient(135deg, #052e3a, #0e7490 50%, #08161a); }
+  :root[data-season="3"] header p, :root[data-season="3"] .sbar { color:#d6f1f0; }
+
+  :root[data-season="3"] tr.top4 { background:rgba(255,122,89,.09); }
+  :root[data-season="3"] .btn:hover { box-shadow:0 6px 16px rgba(255,122,89,.35); }
+  :root[data-season="3"] .rounds button.on { box-shadow:0 0 14px rgba(255,122,89,.5); }
+  :root[data-season="3"] .tlive { background:rgba(255,122,89,.15); }
+  :root[data-season="3"] #intro::before { border-color:rgba(255,122,89,.3); }
+  :root[data-season="3"] #intro::after { background:rgba(255,122,89,.2); }
+  :root[data-season="3"] .count span { text-shadow:0 0 40px rgba(255,122,89,.55); }
+
+  /* dark mode details */
+  :root[data-season="3"]:not([data-theme="light"]) .badge { background:#16333a; }
+  :root[data-season="3"]:not([data-theme="light"]) .ticker { background:#041014; }
+  :root[data-season="3"]:not([data-theme="light"]) .tick em { background:#3a1a12; }
+  :root[data-season="3"]:not([data-theme="light"]) .score { background:#041014; }
+  :root[data-season="3"]:not([data-theme="light"]) .btn,
+  :root[data-season="3"]:not([data-theme="light"]) .rounds button.on { color:#2a0f08; }
+  :root[data-season="3"]:not([data-theme="light"]) #intro { background: radial-gradient(circle at center, #0c3a47 0%, #08161a 70%); }
+
+  /* light mode details */
+  :root[data-season="3"][data-theme="light"] .badge { background:#dff0ef; }
+  :root[data-season="3"][data-theme="light"] .ticker { background:#e6f1f1; }
+  :root[data-season="3"][data-theme="light"] .tick em { background:#ffe3da; }
+  :root[data-season="3"][data-theme="light"] .score { background:#e9f3f3; }
+  :root[data-season="3"][data-theme="light"] #intro { background: radial-gradient(circle at center, #dcefef 0%, #f0f7f7 70%); }
+
 </style>
 </head>
 <body>
