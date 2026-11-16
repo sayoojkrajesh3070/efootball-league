@@ -737,7 +737,13 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     render();
   }
 
-  function seasonTabs() { return hallMode ? HALL_TABS : ["Home"].concat(tabs); }
+  // the Transfers tab only appears for seasons marked transfers:true in SEASONS (Season 2 onwards)
+  function seasonTabs() {
+    if (hallMode) { return HALL_TABS; }
+    const t = tabs.slice();
+    if (SEASONS[currentSeason] && SEASONS[currentSeason].transfers) { t.splice(t.indexOf("Squads") + 1, 0, "Transfers"); }
+    return ["Home"].concat(t);
+  }
 
   function applySeason() {
     teams = SEASONS[currentSeason].teams;
@@ -874,8 +880,8 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
 
   const SEASONS = {
     1: { name: "Season 1", teams: teams, schedule: SCHEDULE, playoff: "six", league: "main", playoffScores: true },
-    2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six", league: "main", playoffScores: true },
-    3: { name: "Season I", teams: TEAMS_S3, schedule: SCHEDULE_S3, playoff: "six", single: true, league: "mini", playoffScores: true,
+    2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six", league: "main", playoffScores: true, transfers: true },
+    3: { name: "Season I", teams: TEAMS_S3, schedule: SCHEDULE_S3, playoff: "six", single: true, league: "mini", playoffScores: true, transfers: true,
          sub: "10 teams · one match each · 9 rounds · top 6 to the playoffs" }
   };
   let currentSeason = 2;   // the season shown when the site opens
@@ -1294,7 +1300,8 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
   }
 
   function pageSquads() {
-    let html = "<p class='legend'>Team owners and squads (23 to 25 players each).</p><div class='sq'>";
+    let html = "<p class='legend'>Team owners and squads (23 to 25 players each)." + (transfersOn() ? " Players who joined or left this season are marked." : "") + "</p>" + squadAnalysisHtml() + "<div class='sq' style='margin-top:16px'>";
+    const trs = transfersOn() ? seasonTransfers() : [];
     Object.keys(teams).forEach(function (code) {
       const s = squads[code] || { owner: "", players: "" };
       const list = playerList(s.players);
@@ -1308,7 +1315,12 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
         html += "<p class='owner'>Owner: <b style='color:var(--text)'>" + (s.owner ? esc(s.owner) : "TBA") + "</b></p>";
         if (list.length) {
           html += "<p class='legend'>" + list.length + " players</p><ol class='plist'>" +
-                  list.map(function (p) { return "<li>" + esc(p) + goalTag(code, p) + "</li>"; }).join("") + "</ol>";
+                  list.map(function (p) {
+                    const n = normName(p), t = trs.find(function (x) { return x.to_team === code && sameName(normName(x.player), n); });
+                    return "<li>" + esc(p) + (t ? " <small style='color:var(--accent);font-weight:700'>🔁 from " + esc(teams[t.from_team] || "?") + "</small>" : "") + goalTag(code, p) + "</li>";
+                  }).join("") + "</ol>";
+          const left = trs.filter(function (x) { return x.from_team === code; });
+          if (left.length) { html += "<p class='legend'>Left: " + left.map(function (x) { return "<b>" + esc(x.player) + "</b> → " + esc(teams[x.to_team] || "?"); }).join(", ") + "</p>"; }
         } else {
           html += "<p class='legend'>Squad not added yet.</p>";
         }
@@ -1524,6 +1536,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
       stat("W-D-L", row.won + "-" + row.drawn + "-" + row.lost) + stat("Goals", row.gf + ":" + row.ga) + stat("Goal diff", (gd > 0 ? "+" : "") + gd) + "</div>";
 
     html += teamExtras(teams[code]);
+    html += teamTransfersCard(code);
     html += allCompetitionsCard(code, row);
     html += "<div class='card'><h3>Points progress</h3>" + pointsChart(done) + "</div>";
 
@@ -2149,6 +2162,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
       "<li><b>Room setup:</b> The home player sets up the room.</li>" +
       "<li><b>Player cards:</b> Only base cards may be used, no other cards. Using any card other than a base card will result in the match being abandoned.</li>" +
       "<li><b>NB:</b> Round Start time:<b> 8:00PM </b> and Deadline:<b> 7:30PM </b>(Next day). Finish each round of matches before 7.30PM. All matches must be completed by the deadline.</li>" +
+      (SEASONS[currentSeason].transfers ? "<li><b>Transfers:</b> Deals between clubs are recorded on the Transfers tab, and both squads are updated.</li>" : "") +
       "<li><b>Golden Glove:</b> The admin records the goalkeeper and saves for each match. Goals conceded and clean sheets come from the score.</li>" +
       "<li><b>Hat-trick:</b> 3 or more goals by one player in one match.</li>" +
       "<li><b>Player of the Week:</b> Picked automatically each round from goals, goalkeeper stats and the team result.</li>" +
@@ -2311,7 +2325,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
   async function saveTransfer() {
     if (!isAdmin) { return; }
     const row = { season: currentSeason, player: document.getElementById("trP").value.trim(), from_team: document.getElementById("trF").value,
-                  to_team: document.getElementById("trT").value, fee: document.getElementById("trFee").value.trim() };
+                  to_team: document.getElementById("trT").value };
     if (!row.player || row.from_team === row.to_team) { setStatus("Enter a player and choose two different clubs."); return; }
     const res = await sb.from("transfers").insert(row).select();
     if (res.error) { setStatus("Could not save: " + res.error.message); return; }
@@ -2325,19 +2339,99 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     allTransfers = allTransfers.filter(function (t) { return t.id !== id; }); render();
   }
 
+  // ---------- transfer helpers (used by Transfers, Squads and team pages) ----------
+  function normName(p) {
+    return String(p || "").replace(/\(.*?\)/g, " ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function sameName(a, b) {
+    if (!a || !b) { return false; }
+    if (a === b) { return true; }
+    const s = a.length <= b.length ? a : b, l = s === a ? b : a;
+    return s.length >= 4 && (" " + l + " ").indexOf(" " + s + " ") !== -1;
+  }
+  function seasonTransfers() {
+    return allTransfers.filter(function (t) { return (t.season || 1) === currentSeason; }).slice().reverse();   // oldest first
+  }
+  function transfersOn() { return !!(SEASONS[currentSeason] && SEASONS[currentSeason].transfers); }
+
+  function squadAnalysis() {
+    const codes = Object.keys(teams), tr = seasonTransfers(), rows = {}, issues = [], seen = {};
+    codes.forEach(function (c) {
+      const list = playerList((squads[c] || { players: "" }).players);
+      rows[c] = { code: c, size: list.length, gk: list.filter(function (p) { return /\bGK\b|goalkeeper/i.test(p); }).length,
+                  names: list.map(normName), inn: 0, out: 0 };
+      rows[c].names.forEach(function (n) { if (n) { seen[n] = seen[n] || []; if (seen[n].indexOf(c) === -1) { seen[n].push(c); } } });
+    });
+    codes.forEach(function (c) {
+      const r = rows[c];
+      if (!r.size) { issues.push(teams[c] + ": squad not added yet."); return; }
+      if (r.size < 23 || r.size > 25) { issues.push(teams[c] + ": " + r.size + " players (expected 23 to 25)."); }
+      if (!r.gk) { issues.push(teams[c] + ": no goalkeeper tagged (GK)."); }
+    });
+    Object.keys(seen).forEach(function (n) {
+      if (seen[n].length > 1) { issues.push("\"" + n + "\" appears in " + seen[n].map(function (c) { return teams[c]; }).join(" and ") + "."); }
+    });
+    tr.forEach(function (t) {
+      const n = normName(t.player), from = rows[t.from_team], to = rows[t.to_team];
+      if (to) { to.inn++; if (to.size && !to.names.some(function (x) { return sameName(x, n); })) { issues.push(t.player + " moved to " + teams[t.to_team] + " but is not in that squad."); } }
+      if (from) { from.out++; if (from.size && from.names.some(function (x) { return sameName(x, n); })) { issues.push(t.player + " moved to " + (teams[t.to_team] || "?") + " but is still in the " + teams[t.from_team] + " squad."); } }
+    });
+    return { rows: rows, issues: issues, transfers: tr };
+  }
+
+  function squadAnalysisHtml() {
+    const a = squadAnalysis(), codes = Object.keys(teams);
+    const total = codes.reduce(function (n, c) { return n + a.rows[c].size; }, 0);
+    let html = "<div class='card'><h3>Squad analysis <span class='legend'>" + esc(SEASONS[currentSeason].name) + "</span></h3>" +
+      "<p class='legend'>" + total + " players across " + codes.length + " squads" + (transfersOn() ? " · " + a.transfers.length + " transfer" + (a.transfers.length === 1 ? "" : "s") + " this season" : "") + ".</p>" +
+      "<div class='scroll'><table><tr><th class='left'>Team</th><th>Players</th><th>GK</th>" + (transfersOn() ? "<th>In</th><th>Out</th><th>Net</th>" : "") + "</tr>";
+    html += codes.map(function (c) {
+      const r = a.rows[c], bad = r.size && (r.size < 23 || r.size > 25);
+      return "<tr><td class='left'>" + esc(teams[c]) + "</td><td" + (bad && isAdmin ? " style='color:var(--red);font-weight:700'" : "") + ">" + r.size + "</td><td>" + r.gk + "</td>" +
+        (transfersOn() ? "<td>" + r.inn + "</td><td>" + r.out + "</td><td class='pts'>" + (r.inn - r.out > 0 ? "+" : "") + (r.inn - r.out) + "</td>" : "") + "</tr>";
+    }).join("");
+    html += "</table></div>";
+    if (isAdmin) {
+      html += a.issues.length
+        ? "<h4 style='margin:14px 0 6px'>Needs attention (" + a.issues.length + ")</h4><ul class='legend' style='margin:0;padding-left:18px'>" + a.issues.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>"
+        : "<p class='legend' style='color:var(--accent)'>✓ Squads and transfers are consistent.</p>";
+    }
+    return html + "</div>";
+  }
+
+  function teamTransfersCard(code) {
+    if (!transfersOn()) { return ""; }
+    const tr = seasonTransfers(), inn = tr.filter(function (t) { return t.to_team === code; }), out = tr.filter(function (t) { return t.from_team === code; });
+    if (!inn.length && !out.length) { return ""; }
+    function ln(t, incoming) {
+      const other = incoming ? t.from_team : t.to_team;
+      return "<div class='tm'><span>" + (incoming ? "🟢 " : "🔴 ") + "<b>" + esc(t.player) + "</b> " + (incoming ? "from " : "to ") + esc(teams[other] || "?") + "</span></div>";
+    }
+    return "<div class='card'><h3>Transfers <span class='legend'>" + esc(SEASONS[currentSeason].name) + "</span></h3>" + inn.map(function (t) { return ln(t, true); }).join("") + out.map(function (t) { return ln(t, false); }).join("") + "</div>";
+  }
+
   function pageTransfers() {
-    const list = allTransfers.filter(function (t) { return t.season === currentSeason; });
+    if (!transfersOn()) { return "<div class='card'><p class='legend'>Transfers are recorded from Season 2 onwards.</p></div>"; }
+    const list = seasonTransfers().reverse();   // newest first
     const opts = Object.keys(teams).map(function (c) { return "<option value='" + c + "'>" + esc(teams[c]) + "</option>"; }).join("");
     let html = "";
     if (isAdmin) {
-      html += "<div class='card'><h3>Add a transfer</h3><input id='trP' placeholder='Player name'> <select id='trF'>" + opts + "</select> <select id='trT'>" + opts + "</select> <input id='trFee' placeholder='Fee or note (optional)'> <button class='btn' onclick='saveTransfer()'>Add</button></div>";
+      html += "<div class='card'><h3>Add a transfer</h3><input id='trP' placeholder='Player name'> <select id='trF'>" + opts + "</select> <select id='trT'>" + opts + "</select> <button class='btn' onclick='saveTransfer()'>Add</button><p class='legend'>Remember to update both squads in the Squads tab after adding a transfer.</p></div>";
     }
-    html += "<div class='card'><h3>Transfers <span class='legend'>" + esc(SEASONS[currentSeason].name) + "</span></h3>";
+    html += "<div class='card'><h3>Transfers <span class='legend'>" + esc(SEASONS[currentSeason].name) + " · " + list.length + " deal" + (list.length === 1 ? "" : "s") + "</span></h3>";
     html += list.length ? list.map(function (t) {
       return "<div class='tm'><span><b>" + esc(t.player) + "</b> " + (teams[t.from_team] ? esc(teams[t.from_team]) : "?") + " → <b>" + (teams[t.to_team] ? esc(teams[t.to_team]) : "?") + "</b>" +
-        (t.fee ? " <small style='color:var(--muted)'>(" + esc(t.fee) + ")</small>" : "") + "</span>" + (isAdmin ? "<button class='btn out' onclick='deleteTransfer(" + t.id + ")'>✕</button>" : "") + "</div>";
+        "</span>" + (isAdmin ? "<button class='btn out' onclick='deleteTransfer(" + t.id + ")'>✕</button>" : "") + "</div>";
     }).join("") : "<p class='legend'>No transfers recorded for this season.</p>";
-    return html + "</div>";
+    html += "</div>";
+    if (list.length) {
+      const a = squadAnalysis();
+      const act = Object.keys(teams).filter(function (c) { return a.rows[c].inn || a.rows[c].out; });
+      html += "<div class='card'><h3>Transfer activity</h3><div class='scroll'><table><tr><th class='left'>Team</th><th>In</th><th>Out</th><th>Net</th></tr>" +
+        act.map(function (c) { const r = a.rows[c]; return "<tr><td class='left'><span class='tl' onclick=\"openTeam('" + c + "')\">" + esc(teams[c]) + "</span></td><td>" + r.inn + "</td><td>" + r.out + "</td><td class='pts'>" + (r.inn - r.out > 0 ? "+" : "") + (r.inn - r.out) + "</td></tr>"; }).join("") +
+        "</table></div></div>";
+    }
+    return html;
   }
 
 function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.toggle("full"); }
