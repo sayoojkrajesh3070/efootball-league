@@ -793,6 +793,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
   function switchSeason(n) {
     if (n === "hall") { hallMode = true; currentTab = "Overall"; render(); window.scrollTo(0, 0); return; }
     hallMode = false;
+    detected = null;
     currentSeason = Number(n);
     applySeason();
     filterSeasonData();
@@ -1317,7 +1318,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
           html += "<p class='legend'>" + list.length + " players</p><ol class='plist'>" +
                   list.map(function (p) {
                     const n = normName(p), t = trs.find(function (x) { return x.to_team === code && sameName(normName(x.player), n); });
-                    return "<li>" + esc(p) + (t ? " <small style='color:var(--accent);font-weight:700'>🔁 from " + esc(teams[t.from_team] || "?") + "</small>" : "") + goalTag(code, p) + "</li>";
+                    return "<li>" + esc(p) + (t ? " <small style='color:var(--accent);font-weight:700'>" + (isNewSigning(t) ? "🆕 new player" : "🔁 from " + esc(teams[t.from_team] || "?")) + "</small>" : "") + goalTag(code, p) + "</li>";
                   }).join("") + "</ol>";
           const left = trs.filter(function (x) { return x.from_team === code; });
           if (left.length) { html += "<p class='legend'>Left: " + left.map(function (x) { return "<b>" + esc(x.player) + "</b> → " + esc(teams[x.to_team] || "?"); }).join(", ") + "</p>"; }
@@ -2352,6 +2353,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
   function seasonTransfers() {
     return allTransfers.filter(function (t) { return (t.season || 1) === currentSeason; }).slice().reverse();   // oldest first
   }
+  function isNewSigning(t) { return t.from_team === "NEW"; }
   function transfersOn() { return !!(SEASONS[currentSeason] && SEASONS[currentSeason].transfers); }
 
   function squadAnalysis() {
@@ -2384,11 +2386,11 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     const total = codes.reduce(function (n, c) { return n + a.rows[c].size; }, 0);
     let html = "<div class='card'><h3>Squad analysis <span class='legend'>" + esc(SEASONS[currentSeason].name) + "</span></h3>" +
       "<p class='legend'>" + total + " players across " + codes.length + " squads" + (transfersOn() ? " · " + a.transfers.length + " transfer" + (a.transfers.length === 1 ? "" : "s") + " this season" : "") + ".</p>" +
-      "<div class='scroll'><table><tr><th class='left'>Team</th><th>Players</th><th>GK</th>" + (transfersOn() ? "<th>In</th><th>Out</th><th>Net</th>" : "") + "</tr>";
+      "<div class='scroll'><table><tr><th class='left'>Team</th><th>Players</th><th>GK</th>" + (transfersOn() ? "<th>In</th><th>Out</th>" : "") + "</tr>";
     html += codes.map(function (c) {
       const r = a.rows[c], bad = r.size && (r.size < 23 || r.size > 25);
       return "<tr><td class='left'>" + esc(teams[c]) + "</td><td" + (bad && isAdmin ? " style='color:var(--red);font-weight:700'" : "") + ">" + r.size + "</td><td>" + r.gk + "</td>" +
-        (transfersOn() ? "<td>" + r.inn + "</td><td>" + r.out + "</td><td class='pts'>" + (r.inn - r.out > 0 ? "+" : "") + (r.inn - r.out) + "</td>" : "") + "</tr>";
+        (transfersOn() ? "<td>" + r.inn + "</td><td>" + r.out + "</td>" : "") + "</tr>";
     }).join("");
     html += "</table></div>";
     if (isAdmin) {
@@ -2405,30 +2407,119 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     if (!inn.length && !out.length) { return ""; }
     function ln(t, incoming) {
       const other = incoming ? t.from_team : t.to_team;
-      return "<div class='tm'><span>" + (incoming ? "🟢 " : "🔴 ") + "<b>" + esc(t.player) + "</b> " + (incoming ? "from " : "to ") + esc(teams[other] || "?") + "</span></div>";
+      return "<div class='tm'><span>" + (incoming ? "🟢 " : "🔴 ") + "<b>" + esc(t.player) + "</b> " + (incoming ? (isNewSigning(t) ? "(new player)" : "from " + esc(teams[other] || "?")) : "to " + esc(teams[other] || "?")) + "</span></div>";
     }
     return "<div class='card'><h3>Transfers <span class='legend'>" + esc(SEASONS[currentSeason].name) + "</span></h3>" + inn.map(function (t) { return ln(t, true); }).join("") + out.map(function (t) { return ln(t, false); }).join("") + "</div>";
+  }
+
+  // ---------- find transfers by comparing last season's squads with this season's (admin) ----------
+  let detected = null;
+  function cleanPlayer(p) { return String(p).replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim(); }
+
+  function detectTransfers() {
+    if (!isAdmin) { return; }
+    const prevNo = currentSeason - 1, codes = Object.keys(teams), prevN = {}, curN = {}, prevRaw = {}, curRaw = {};
+    const prevRows = allSquads.filter(function (r) { return (r.season || 1) === prevNo; });
+    if (!prevRows.length) { setStatus("No squads found in " + (SEASONS[prevNo] ? SEASONS[prevNo].name : "Season " + prevNo) + "."); return; }
+    prevRows.forEach(function (r) { prevRaw[r.team] = playerList(r.players || ""); });
+    codes.forEach(function (c) {
+      prevRaw[c] = prevRaw[c] || [];
+      curRaw[c] = playerList((squads[c] || { players: "" }).players);
+      prevN[c] = prevRaw[c].map(normName); curN[c] = curRaw[c].map(normName);
+    });
+    if (!codes.some(function (c) { return curRaw[c].length; })) { setStatus("Add the " + SEASONS[currentSeason].name + " squads first."); return; }
+    function findIn(map, n, skip) {
+      let hit = codes.find(function (c) { return c !== skip && map[c].some(function (x) { return x === n; }); });
+      if (!hit) { hit = codes.find(function (c) { return c !== skip && map[c].some(function (x) { return sameName(x, n); }); }); }
+      return hit;
+    }
+    const have = seasonTransfers(), moves = [], fresh = [], gone = [];
+    codes.forEach(function (c) {
+      curRaw[c].forEach(function (p, i) {
+        const n = curN[c][i];
+        if (!n || prevN[c].some(function (x) { return sameName(x, n); })) { return; }
+        const from = findIn(prevN, n, c);
+        if (from) {
+          const done = have.some(function (t) { return t.to_team === c && sameName(normName(t.player), n); });
+          moves.push({ player: cleanPlayer(p), from: from, to: c, done: done });
+        } else {
+          const done = have.some(function (t) { return t.to_team === c && sameName(normName(t.player), n); });
+          fresh.push({ team: c, player: cleanPlayer(p), done: done });
+        }
+      });
+      prevRaw[c].forEach(function (p, i) {
+        const n = prevN[c][i];
+        if (!n || curN[c].some(function (x) { return sameName(x, n); })) { return; }
+        if (!findIn(curN, n, c)) { gone.push({ team: c, player: cleanPlayer(p) }); }
+      });
+    });
+    detected = { prevNo: prevNo, moves: moves, fresh: fresh, gone: gone };
+    render();
+  }
+
+  async function addDetected() {
+    if (!isAdmin || !detected) { return; }
+    const rows = [];
+    document.querySelectorAll(".dtc").forEach(function (cb) {
+      if (cb.checked) { const m = detected.moves[Number(cb.getAttribute("data-i"))]; rows.push({ season: currentSeason, player: m.player, from_team: m.from, to_team: m.to }); }
+    });
+    document.querySelectorAll(".dtn").forEach(function (cb) {
+      if (cb.checked) { const m = detected.fresh[Number(cb.getAttribute("data-i"))]; rows.push({ season: currentSeason, player: m.player, from_team: "NEW", to_team: m.team }); }
+    });
+    if (!rows.length) { setStatus("Tick at least one player."); return; }
+    const res = await sb.from("transfers").insert(rows).select();
+    if (res.error) { setStatus("Could not save: " + res.error.message); return; }
+    allTransfers = res.data.concat(allTransfers); detected = null;
+    toast(rows.length + " transfer" + (rows.length === 1 ? "" : "s") + " added ✓"); render();
+  }
+
+  function detectCardHtml() {
+    if (!isAdmin) { return ""; }
+    const prevNo = currentSeason - 1, pn = SEASONS[prevNo] ? fullName(prevNo) : "Season " + prevNo;
+    let h = "<div class='card'><h3>Find transfers from squads</h3><p class='legend'>Compares the " + esc(pn) + " squads with the " + esc(fullName(currentSeason)) + " squads and lists every player who is now at a different club.</p>" +
+      "<p><button class='btn' onclick='detectTransfers()'>🔍 Compare squads</button></p>";
+    if (detected) {
+      const d = detected, todo = d.moves.filter(function (m) { return !m.done; }).length + d.fresh.filter(function (m) { return !m.done; }).length;
+      h += "<h4 style='margin:12px 0 6px'>Transferred players (" + d.moves.length + ")</h4>";
+      h += d.moves.length ? d.moves.map(function (m, i) {
+        return "<label class='tm' style='cursor:pointer'><span style='flex:none'><input type='checkbox' class='dtc' data-i='" + i + "'" + (m.done ? " disabled" : " checked") + "></span><span><b>" + esc(m.player) + "</b> " + esc(teams[m.from]) + " → <b>" + esc(teams[m.to]) + "</b>" + (m.done ? " <small class='legend'>(already added)</small>" : "") + "</span></label>";
+      }).join("") : "<p class='legend'>No player moved between clubs.</p>";
+      h += "<h4 style='margin:16px 0 6px'>New players with no previous club (" + d.fresh.length + ")</h4>";
+      h += d.fresh.length ? d.fresh.map(function (m, i) {
+        return "<label class='tm' style='cursor:pointer'><span style='flex:none'><input type='checkbox' class='dtn' data-i='" + i + "'" + (m.done ? " disabled" : " checked") + "></span><span><b>" + esc(m.player) + "</b> → <b>" + esc(teams[m.team]) + "</b>" + (m.done ? " <small class='legend'>(already added)</small>" : "") + "</span></label>";
+      }).join("") : "<p class='legend'>None.</p>";
+      if (todo) { h += "<p><button class='btn' onclick='addDetected()'>Add ticked players</button></p>"; }
+      const by = {}; d.gone.forEach(function (x) { (by[x.team] = by[x.team] || []).push(x.player); });
+      h += "<details style='margin-top:10px'><summary><b>Players no longer in any squad (" + d.gone.length + ")</b></summary><div class='legend'>" + (d.gone.length ? Object.keys(by).map(function (c) { return "<div><b>" + esc(teams[c]) + ":</b> " + by[c].map(esc).join(", ") + "</div>"; }).join("") : "None") + "</div></details>";
+      h += "<p class='legend'>Names are matched ignoring (GK) tags and accents. Untick anything that is a different player with a similar name.</p>";
+    }
+    return h + "</div>";
   }
 
   function pageTransfers() {
     if (!transfersOn()) { return "<div class='card'><p class='legend'>Transfers are recorded from Season 2 onwards.</p></div>"; }
     const list = seasonTransfers().reverse();   // newest first
+    const moved = list.filter(function (t) { return !isNewSigning(t); }), fresh = list.filter(isNewSigning);
     const opts = Object.keys(teams).map(function (c) { return "<option value='" + c + "'>" + esc(teams[c]) + "</option>"; }).join("");
     let html = "";
     if (isAdmin) {
-      html += "<div class='card'><h3>Add a transfer</h3><input id='trP' placeholder='Player name'> <select id='trF'>" + opts + "</select> <select id='trT'>" + opts + "</select> <button class='btn' onclick='saveTransfer()'>Add</button><p class='legend'>Remember to update both squads in the Squads tab after adding a transfer.</p></div>";
+      html += "<div class='card'><h3>Add a transfer</h3><input id='trP' placeholder='Player name'> <select id='trF'><option value='NEW'>New player (no previous club)</option>" + opts + "</select> <select id='trT'>" + opts + "</select> <button class='btn' onclick='saveTransfer()'>Add</button><p class='legend'>Remember to update the squads in the Squads tab after adding a transfer.</p></div>" + detectCardHtml();
     }
-    html += "<div class='card'><h3>Transfers <span class='legend'>" + esc(SEASONS[currentSeason].name) + " · " + list.length + " deal" + (list.length === 1 ? "" : "s") + "</span></h3>";
-    html += list.length ? list.map(function (t) {
-      return "<div class='tm'><span><b>" + esc(t.player) + "</b> " + (teams[t.from_team] ? esc(teams[t.from_team]) : "?") + " → <b>" + (teams[t.to_team] ? esc(teams[t.to_team]) : "?") + "</b>" +
-        "</span>" + (isAdmin ? "<button class='btn out' onclick='deleteTransfer(" + t.id + ")'>✕</button>" : "") + "</div>";
-    }).join("") : "<p class='legend'>No transfers recorded for this season.</p>";
+    function row(t, isNew) {
+      return "<div class='tm'><span><b>" + esc(t.player) + "</b> " + (isNew ? "→" : (teams[t.from_team] ? esc(teams[t.from_team]) : "?") + " →") + " <b>" + (teams[t.to_team] ? esc(teams[t.to_team]) : "?") + "</b></span>" +
+        (isAdmin ? "<button class='btn out' onclick='deleteTransfer(" + t.id + ")'>✕</button>" : "") + "</div>";
+    }
+    html += "<div class='card'><h3>Transferred players <span class='legend'>" + esc(SEASONS[currentSeason].name) + " · " + moved.length + " deal" + (moved.length === 1 ? "" : "s") + "</span></h3>";
+    html += moved.length ? moved.map(function (t) { return row(t, false); }).join("") : "<p class='legend'>No club-to-club transfers recorded for this season.</p>";
+    html += "</div>";
+    html += "<div class='card'><h3>New players <span class='legend'>no previous club · " + fresh.length + "</span></h3>";
+    html += fresh.length ? fresh.map(function (t) { return row(t, true); }).join("") : "<p class='legend'>No new players recorded for this season.</p>";
     html += "</div>";
     if (list.length) {
       const a = squadAnalysis();
       const act = Object.keys(teams).filter(function (c) { return a.rows[c].inn || a.rows[c].out; });
-      html += "<div class='card'><h3>Transfer activity</h3><div class='scroll'><table><tr><th class='left'>Team</th><th>In</th><th>Out</th><th>Net</th></tr>" +
-        act.map(function (c) { const r = a.rows[c]; return "<tr><td class='left'><span class='tl' onclick=\"openTeam('" + c + "')\">" + esc(teams[c]) + "</span></td><td>" + r.inn + "</td><td>" + r.out + "</td><td class='pts'>" + (r.inn - r.out > 0 ? "+" : "") + (r.inn - r.out) + "</td></tr>"; }).join("") +
+      html += "<div class='card'><h3>Transfer activity</h3><div class='scroll'><table><tr><th class='left'>Team</th><th>In</th><th>Out</th></tr>" +
+        act.map(function (c) { const r = a.rows[c]; return "<tr><td class='left'><span class='tl' onclick=\"openTeam('" + c + "')\">" + esc(teams[c]) + "</span></td><td>" + r.inn + "</td><td>" + r.out + "</td></tr>"; }).join("") +
         "</table></div></div>";
     }
     return html;
