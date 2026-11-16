@@ -599,6 +599,40 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
   .brand-title { font-size:42px !important; }
   nav button { padding:10px 11px; }
 }
+
+/* trophies, intro pop-up, recap */
+.champ { margin:0 0 18px; }
+.cabinet { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.trophy { text-align:center; padding:16px 10px; border-radius:8px; background:var(--soft); border:1px solid var(--line); }
+.trophy .ti { display:block; font-size:38px; line-height:1.1; }
+.trophy b { display:block; font:400 20px var(--font-head); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+.trophy small { display:block; color:var(--muted); font-size:11px; }
+.trophy .stars { color:var(--gold); letter-spacing:2px; margin-top:6px; font-size:13px; }
+.trophy.s5 { background:linear-gradient(160deg,#8e0d16,#c1121f); border-color:var(--gold); grid-column:span 2; }
+.trophy.s5 .ti { font-size:54px; } .trophy.s5 small { color:#ffd9dc; }
+.trophy.s3 { border-color:var(--gold); } .trophy.s2 { border-color:#9a7a1a; }
+.intro { position:fixed; inset:0; z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:20px; background:rgba(5,5,8,.94); perspective:1000px; overflow:hidden; animation:iFade .3s both; }
+.intro.out { opacity:0; transition:opacity .35s; }
+.ilead { text-align:center; transform-style:preserve-3d; animation:iPop 1s cubic-bezier(.2,.9,.3,1.15) both; }
+.ibadge { width:120px; height:120px; margin:0 auto 12px; border-radius:50%; background:#fff; color:#0b0b0e; display:flex; align-items:center; justify-content:center; font:400 46px var(--font-head); box-shadow:0 0 0 6px var(--accent),0 20px 60px rgba(193,18,31,.5); }
+.ilead small { color:var(--gold); font:600 12px var(--font-ui); letter-spacing:3px; text-transform:uppercase; }
+.ilead h2 { margin:6px 0 14px; font:400 clamp(44px,12vw,84px)/.95 var(--font-head); color:#fff; text-transform:uppercase; }
+.istats { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.istats div { min-width:58px; padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:var(--card); }
+.istats b { display:block; font:400 26px var(--font-head); color:#fff; } .istats i { font:600 10px var(--font-ui); font-style:normal; letter-spacing:1.5px; color:var(--muted); }
+.irest { display:none; width:100%; max-width:460px; flex-direction:column; gap:6px; perspective:900px; }
+.intro.p2 .irest { display:flex; }
+.intro.p2 .ilead { animation:iShrink .6s both; margin-bottom:-30px; }
+.intro.p2 .ibadge { width:70px; height:70px; font-size:26px; } .intro.p2 .istats { display:none; }
+.irow { display:grid; grid-template-columns:34px 1fr auto auto; gap:10px; align-items:center; padding:9px 12px; background:var(--card); border:1px solid var(--line); border-radius:6px; transform-origin:top; animation:iRow .5s both; }
+.irow span { font:400 16px var(--font-head); color:var(--gold); } .irow b { color:#fff; font-size:14px; } .irow small,.irow em { color:var(--muted); font-size:11px; font-style:normal; }
+.iskip { position:absolute; bottom:calc(14px + env(safe-area-inset-bottom,0px)); color:var(--muted); font-size:11px; letter-spacing:2px; text-transform:uppercase; }
+.cf { position:absolute; top:-20px; width:8px; height:14px; animation:cfall linear both; }
+@keyframes iFade { from { opacity:0; } to { opacity:1; } }
+@keyframes iPop { from { opacity:0; transform:translateZ(-400px) rotateY(-100deg) rotateX(25deg) scale(.3); } to { opacity:1; transform:none; } }
+@keyframes iShrink { to { transform:translateY(-4vh) scale(.62); } }
+@keyframes iRow { from { opacity:0; transform:rotateX(-80deg) translateY(-14px); } to { opacity:1; transform:none; } }
+@keyframes cfall { to { transform:translateY(112vh) rotate(720deg); } }
 </style>
 </head>
 <body>
@@ -640,7 +674,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "News", "Race", "Fixtures", "Playoffs", "Awards", "Transfers", "Squads", "Records", "Golden Boot", "Player Stats", "Hall of Fame", "Rules", "Admin"];
+  const tabs = ["Standings", "News", "Race", "Fixtures", "Playoffs", "Awards", "Squads", "Records", "Golden Boot", "Player Stats", "Hall of Fame", "Team Stats", "Rules", "Admin"];
   let currentTab = "Home";
   let currentRound = 0;
   let currentTeam = "T1";
@@ -677,7 +711,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     render();
   }
 
-  function seasonTabs() { const t = SEASONS[currentSeason].tabs || tabs; return t.indexOf("Home") === -1 ? ["Home"].concat(t) : t; }
+  function seasonTabs() { return ["Home"].concat(tabs); }
 
   function applySeason() {
     teams = SEASONS[currentSeason].teams;
@@ -810,7 +844,6 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     1: { name: "Season 1", teams: teams, schedule: SCHEDULE, playoff: "six", league: "main" },
     2: { name: "Season 2", teams: TEAMS_S2, schedule: SCHEDULE_S2, playoff: "six", league: "main", playoffScores: true },
     3: { name: "Mini League", teams: TEAMS_S3, schedule: SCHEDULE_S3, playoff: "six", single: true, league: "mini", playoffScores: true,
-         tabs: ["Standings", "News", "Race", "Fixtures", "Playoffs", "Awards", "Transfers", "Squads", "Golden Boot", "Admin"],
          sub: "10 teams · one match each · 9 rounds · top 6 to the playoffs" }
   };
   let currentSeason = 2;   // the season shown when the site opens
@@ -996,7 +1029,6 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
         "<td class='pts'>" + r.points + "</td><td class='form'>" + form + "</td></tr>";
     });
     html += "</table></div><p class='legend'>Green bar = playoff places (top " + qualifiers() + "). 1st place after " + SCHEDULE.length + " rounds wins the League Shield. Ties are split by goal difference, then goals scored. Hover over a badge to see why it was awarded.</p>";
-    html += awardsCard(rows, badges);
     return html;
   }
 
@@ -1175,8 +1207,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator", q1Loser, elWinner, "#3b82f6");
     html += matchCard("f", "Final", "Winner of Q1 vs winner of Q2", q1Winner, q2Winner, "#f5b301");
     html += "</div>";
-    if (champion) { html += "<div class='champ'>🏆 Champions: " + teams[champion] + "</div>"; }
-    return html;
+    return (champion ? "<div class='champ'>🏆 Champions: " + esc(teams[champion]) + "</div>" : "") + html;
   }
   
     function pagePlayoffs() {
@@ -1203,8 +1234,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     html += matchCard("q2", "Qualifier 2", "Loser of Q1 vs winner of Eliminator 1", q1Loser, el1Winner, "#3b82f6");
     html += matchCard("f", "Final", "Winner of Q1 vs winner of Q2", q1Winner, q2Winner, "#f5b301");
     html += "</div>";
-    if (champion) { html += "<div class='champ'>🏆 Champions: " + teams[champion] + "</div>"; }
-    return html;
+    return (champion ? "<div class='champ'>🏆 Champions: " + esc(teams[champion]) + "</div>" : "") + html;
   }
 
   function esc(t) {
@@ -1681,7 +1711,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     });
     boot = boot.map(function (k) {
       const i = k.indexOf("|");
-      return { team: cfg.teams[k.slice(0, i)] || k.slice(0, i), player: k.slice(i + 1) };
+      return { team: cfg.teams[k.slice(0, i)] || k.slice(0, i), code: k.slice(0, i), player: k.slice(i + 1) };
     });
     return { name: cfg.name, played: played, total: total, complete: played === total, shield: table[0],
              champion: champion ? cfg.teams[champion] : null, runnerUp: runnerUp ? cfg.teams[runnerUp] : null,
@@ -2335,8 +2365,120 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
     else { renderNow(); }
   }
 
+  // =============== OVERALL TEAM STATS, TROPHIES, INTROS, RECAP ===============
+  let ovTeam = "";
+  function pickOv(n) { ovTeam = n; render(); }
+  function withSeason(no, fn) {
+    const keep = currentSeason;
+    function set(n) { currentSeason = n; teams = SEASONS[n].teams; SCHEDULE = SEASONS[n].schedule; filterSeasonData(); }
+    try { set(no); return fn(); } finally { set(keep); }
+  }
+  function stars(n) { return "★".repeat(n) + "<span style='opacity:.25'>" + "★".repeat(5 - n) + "</span>"; }
+
+  function overallData() {
+    const by = {};
+    function get(name) { return by[name] || (by[name] = { name: name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, seasons: [], trophies: [] }); }
+    Object.keys(SEASONS).map(Number).sort(function (a, b) { return a - b; }).forEach(function (no) {
+      const sum = seasonSummary(no);
+      withSeason(no, function () {
+        const rows = buildStandings(), badges = computeBadges(rows);
+        rows.forEach(function (r, i) {
+          const a = get(r.name);
+          a.p += r.played; a.w += r.won; a.d += r.drawn; a.l += r.lost; a.gf += r.gf; a.ga += r.ga; a.pts += r.points;
+          a.seasons.push({ name: SEASONS[no].name, p: r.played, w: r.won, d: r.drawn, l: r.lost, gf: r.gf, ga: r.ga, pts: r.points, pos: i + 1 });
+          if (sum.complete) { badges[r.code].forEach(function (b) { a.trophies.push({ icon: b.icon, title: b.name, season: SEASONS[no].name, stars: 1 }); }); }
+        });
+      });
+      if (sum.complete) {
+        if (sum.champion) { get(sum.champion).trophies.push({ icon: "🏆", title: "League Champions", season: sum.name, stars: 5 }); }
+        get(sum.shield.name).trophies.push({ icon: "🛡️", title: "League Shield", season: sum.name, stars: 3 });
+        sum.boot.forEach(function (b) { get(b.team).trophies.push({ icon: "👟", title: "Golden Boot", season: sum.name, detail: b.player + " · " + sum.bootGoals + " goals", stars: 2 }); });
+      }
+    });
+    Object.keys(by).forEach(function (k) { by[k].trophies.sort(function (x, y) { return y.stars - x.stars; }); });
+    return by;
+  }
+
+  function cabinet(a) {
+    if (!a.trophies.length) { return "<p class='legend'>No trophies yet. Awards are added when a league finishes.</p>"; }
+    return "<div class='cabinet'>" + a.trophies.map(function (t) {
+      return "<div class='trophy s" + t.stars + "'><span class='ti'>" + t.icon + "</span><b>" + esc(t.title) + "</b><small>" + esc(t.season) + (t.detail ? " · " + esc(t.detail) : "") + "</small><div class='stars'>" + stars(t.stars) + "</div></div>";
+    }).join("") + "</div>";
+  }
+
+  function pageTeamStats() {
+    const by = overallData(), names = Object.keys(by).sort();
+    function gd(a) { const d = a.gf - a.ga; return d > 0 ? "+" + d : d; }
+    function cell(v, l) { return "<div><b>" + v + "</b><small>" + l + "</small></div>"; }
+    let h = "<p class='legend'>Combined results from every league so far: main leagues and the mini league together.</p>" +
+      "<select onchange='pickOv(this.value)' style='margin-bottom:16px;max-width:380px'><option value=''>All teams combined</option>" +
+      names.map(function (n) { return "<option value=\"" + esc(n) + "\"" + (n === ovTeam ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("") + "</select>";
+    if (ovTeam && by[ovTeam]) {
+      const a = by[ovTeam];
+      h += "<div class='card'><h3>" + esc(a.name) + "</h3><div class='strip'>" + cell(a.p, "Matches") + cell(a.w, "Won") + cell(a.d, "Drawn") + cell(a.l, "Lost") + cell(a.gf, "Goals for") + cell(a.ga, "Against") + cell(gd(a), "Goal diff") + cell(a.pts, "Points") + cell(a.p ? Math.round(a.w / a.p * 100) + "%" : "0%", "Win rate") + "</div></div>";
+      h += "<div class='card'><h3>Trophy cabinet</h3>" + cabinet(a) + "</div>";
+      h += "<div class='card scroll'><h3>By league</h3><table style='min-width:0'><tr><th class='left'>League</th><th>Pos</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>" +
+        a.seasons.map(function (s) { return "<tr><td class='left'>" + esc(s.name) + "</td><td>" + s.pos + "</td><td>" + s.p + "</td><td>" + s.w + "</td><td>" + s.d + "</td><td>" + s.l + "</td><td>" + (s.gf - s.ga) + "</td><td class='pts'>" + s.pts + "</td></tr>"; }).join("") + "</table></div>";
+      return h;
+    }
+    const list = names.map(function (n) { return by[n]; }).sort(function (x, y) { return y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga); });
+    h += "<div class='card scroll'><table style='min-width:0'><tr><th>#</th><th class='left'>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>🏆</th></tr>" +
+      list.map(function (a, i) { return "<tr><td>" + (i + 1) + "</td><td class='left'><a class='tl' data-n=\"" + esc(a.name) + "\" onclick='pickOv(this.dataset.n)'>" + esc(a.name) + "</a></td><td>" + a.p + "</td><td>" + a.w + "</td><td>" + a.d + "</td><td>" + a.l + "</td><td>" + gd(a) + "</td><td class='pts'>" + a.pts + "</td><td>" + a.trophies.length + "</td></tr>"; }).join("") + "</table></div>" +
+      "<p class='legend'>Pick a team above to see its trophy cabinet. Stars: Champions ★★★★★, League Shield ★★★, Golden Boot ★★, every other award ★.</p>";
+    return h;
+  }
+
+  function recapHtml(sum) {
+    const fx = buildFixtures().flat(); let big = null, hi = null, goals = 0, n = 0;
+    fx.forEach(function (m) {
+      const r = results[m.id]; if (!isPlayed(r)) { return; }
+      const d = Math.abs(r.h - r.a), t = Number(r.h) + Number(r.a); goals += t; n++;
+      if (!big || d > big.d) { big = { d: d, m: m, r: r }; }
+      if (!hi || t > hi.t) { hi = { t: t, m: m, r: r }; }
+    });
+    function line(x) { return x ? esc(teams[x.m.home]) + " " + x.r.h + "-" + x.r.a + " " + esc(teams[x.m.away]) : "-"; }
+    function box(icon, t, main, sub) { return "<div class='hbox'><span class='ic'>" + icon + "</span><div class='ht'>" + t + "</div><div class='hm'>" + main + "</div><div class='legend'>" + sub + "</div></div>"; }
+    return "<div class='card hall'><h2>Season recap <span class='tag tdone'>" + esc(sum.name) + "</span></h2><div class='hgrid'>" +
+      box("🏆", "Champions", esc(sum.champion), "Runners-up: " + esc(sum.runnerUp || "-") + "<br>" + stars(5)) +
+      box("🛡️", "League Shield", esc(sum.shield.name), sum.shield.pts + " points from " + sum.shield.p + " matches<br>" + stars(3)) +
+      box("👟", "Golden Boot", sum.boot.length ? sum.boot.map(function (b) { return esc(b.player); }).join(", ") : "-", sum.bootGoals + " goals<br>" + stars(2)) +
+      box("⚽", "Goals", goals, n + " matches · " + (n ? (goals / n).toFixed(1) : 0) + " per match") +
+      box("💥", "Biggest win", line(big), "") + box("🔥", "Highest scoring", line(hi), "") + "</div></div>";
+  }
+
+  // 3D pop-up when entering Standings, Golden Boot, or the Playoffs after a season ends
+  function introFor(tab) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    let lead = null, rest = [], party = false;
+    if (tab === "Standings") {
+      const t = buildStandings(); if (!t.some(function (r) { return r.played; })) { return; }
+      const r = t[0];
+      lead = { badge: initials(r.name), title: r.name, sub: "League leaders", stats: [["P", r.played], ["W", r.won], ["D", r.drawn], ["L", r.lost], ["GD", r.gf - r.ga], ["PTS", r.points]] };
+      rest = t.slice(1).map(function (x, i) { return { badge: initials(x.name), title: x.name, sub: "#" + (i + 2), right: x.points + " pts" }; });
+    } else if (tab === "Golden Boot") {
+      const l = bootTotals(); if (!l.length) { return; }
+      lead = { badge: initials(teams[l[0].team]), title: l[0].player, sub: "Golden Boot leader · " + teams[l[0].team], stats: [["GOALS", l[0].goals]] };
+      rest = l.slice(1, 9).map(function (x) { return { badge: initials(teams[x.team]), title: x.player, sub: teams[x.team], right: x.goals + " goals" }; });
+    } else if (tab === "Playoffs") {
+      const s = seasonSummary(currentSeason); if (!(s.complete && s.champion)) { return; }
+      lead = { badge: "🏆", title: s.champion, sub: "Champions · " + s.name, stats: [["RUNNERS-UP", s.runnerUp || "-"]] }; party = true;
+    } else { return; }
+    const old = document.querySelector(".intro"); if (old) { old.remove(); }
+    const el = document.createElement("div"); el.className = "intro";
+    let cf = "";
+    if (party) { for (let i = 0; i < 44; i++) { cf += "<i class='cf' style='left:" + Math.round(Math.random() * 100) + "%;background:" + ["#f5b301", "#c1121f", "#fff", "#ff5a67"][i % 4] + ";animation-delay:" + (Math.random() * 1.2).toFixed(2) + "s;animation-duration:" + (2 + Math.random() * 1.8).toFixed(2) + "s'></i>"; } }
+    el.innerHTML = "<div class='ilead'><div class='ibadge'>" + esc(lead.badge) + "</div><small>" + esc(lead.sub) + "</small><h2>" + esc(lead.title) + "</h2><div class='istats'>" +
+      lead.stats.map(function (s) { return "<div><b>" + esc(String(s[1])) + "</b><i>" + s[0] + "</i></div>"; }).join("") + "</div></div>" +
+      "<div class='irest'>" + rest.map(function (x, i) { return "<div class='irow' style='animation-delay:" + (i * 0.1).toFixed(1) + "s'><span>" + esc(x.badge) + "</span><b>" + esc(x.title) + "</b><small>" + esc(x.sub) + "</small><em>" + esc(x.right) + "</em></div>"; }).join("") + "</div>" + cf + "<div class='iskip'>Tap to skip</div>";
+    let closed = false;
+    function close() { if (closed) { return; } closed = true; el.classList.add("out"); setTimeout(function () { el.remove(); }, 350); }
+    el.onclick = close; document.body.appendChild(el);
+    if (rest.length) { setTimeout(function () { el.classList.add("p2"); }, 1700); setTimeout(close, 1700 + rest.length * 100 + 1500); }
+    else { setTimeout(close, 3800); }
+  }
+
   // =============== HOME PAGE ===============
-  const TILE_INFO = { Standings: "League table", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
+  const TILE_INFO = { Standings: "League table", "Team Stats": "Combined stats & trophies", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
   function goTab(t) { currentTab = t; render(); window.scrollTo(0, 0); }
   function pageHome() {
     const table = buildStandings(), played = getPlayedMatches();
@@ -2349,16 +2491,18 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       if (done) { last.push({ m: m, r: r }); } else if (!next) { next = m; nextRound = ri + 1; }
     }); });
     last = last.slice(-5).reverse();
+    const sum = seasonSummary(currentSeason), fin = !!(sum.complete && sum.champion);
     const kick = played.length ? teams[lead.code] + " lead the league" : "Season " + currentSeason + " kicks off soon";
-    let h = "<section class='feat homefeat'><div class='feat-txt'><small>" + (played.length ? "League leaders" : "Welcome") + "</small><h2>" + esc(kick) + "</h2>" +
-      "<p class='legend'>" + (played.length ? lead.won + "W " + lead.drawn + "D " + lead.lost + "L · " + (lead.gf - lead.ga) + " goal difference" : codes.length + " teams · home & away") + "</p>" +
-      "<button class='btn' onclick=\"goTab('Standings')\">Full table →</button></div>" +
-      "<div class='feat-side'><div class='feat-num'><b>" + (played.length ? lead.points : codes.length) + "</b><small>" + (played.length ? "POINTS" : "TEAMS") + "</small></div></div></section>";
+    let h = "<section class='feat homefeat'><div class='feat-txt'><small>" + (fin ? "Season champions" : played.length ? "League leaders" : "Welcome") + "</small><h2>" + esc(fin ? sum.champion : kick) + "</h2>" +
+      "<p class='legend'>" + (fin ? "League Shield: " + esc(sum.shield.name) + " · Runners-up: " + esc(sum.runnerUp || "-") : played.length ? lead.won + "W " + lead.drawn + "D " + lead.lost + "L · " + (lead.gf - lead.ga) + " goal difference" : codes.length + " teams · home & away") + "</p>" +
+      "<button class='btn' onclick=\"goTab('" + (fin ? "Playoffs" : "Standings") + "')\">" + (fin ? "Playoffs →" : "Full table →") + "</button></div>" +
+      "<div class='feat-side'><div class='feat-num'><b>" + (fin ? "🏆" : played.length ? lead.points : codes.length) + "</b><small>" + (fin ? "CHAMPIONS" : played.length ? "POINTS" : "TEAMS") + "</small></div></div></section>";
     h += "<div class='nextbar'><div><small>Next match" + (next ? " · Round " + nextRound : "") + "</small></div>" +
       (next ? "<div class='nm'><b>" + esc(teams[next.home]) + "</b><span class='vsx'>VS</span><b>" + esc(teams[next.away]) + "</b></div>" : "<div class='nm'><b>All fixtures played</b></div>") +
       "<button class='btn out' onclick=\"goTab('Fixtures')\">View all</button></div>";
     function cell(v, l) { return "<div><b>" + v + "</b><small>" + l + "</small></div>"; }
     h += "<div class='strip'>" + cell(played.length, "Matches") + cell(goals, "Goals") + cell(played.length ? (goals / played.length).toFixed(1) : "0.0", "Goals / match") + cell(codes.length, "Teams") + "</div>";
+    if (fin) { h += recapHtml(sum); }
     h += "<div class='homegrid'><div class='card'><h3>Top 5</h3><div class='scroll'><table style='min-width:0'><tr><th>#</th><th class='left'>Team</th><th>P</th><th>GD</th><th>Pts</th></tr>" +
       table.slice(0, 5).map(function (r, i) { return "<tr class='" + (i < 4 ? "top4" : "") + "'><td>" + (i + 1) + "</td><td class='left'><span class='tl' onclick=\"openTeam('" + r.code + "')\">" + esc(r.name) + "</span></td><td>" + r.played + "</td><td>" + (r.gf - r.ga) + "</td><td class='pts'>" + r.points + "</td></tr>"; }).join("") +
       "</table></div></div><div class='card'><h3>Latest results</h3>" +
@@ -2374,12 +2518,13 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       return "<button data-tab='" + t + "' class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
     setNav(navHtml);
-    const pages = { Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { "Team Stats": pageTeamStats, Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = loaded ? pageHead() + (currentTab === "Standings" ? heroLeader() : "") + pages[currentTab]() : skeleton();
 
     // play the entrance animation only when the tab or round changes
     const key = currentTab + (currentTab === "Fixtures" ? currentRound : "");
+    const entering = key !== lastKey && lastKey !== "";
     if (key !== lastKey) {
       app.classList.remove("enter");
       void app.offsetWidth;          // restarts the animation
@@ -2390,6 +2535,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
     applyLogos(app);
     renderTicker();
     animateCounts();
+    if (entering && loaded) { introFor(currentTab); }
   }
 
   // =============== START ===============
