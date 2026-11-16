@@ -702,6 +702,142 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
 .wr .wsub small { opacity:.7; }
 .wr .wrbtn { margin-top:16px; background:#fff; color:#111; border:0; border-radius:999px; padding:10px 20px; font:700 14px var(--font-body); cursor:pointer; }
 @keyframes wrIn { from { opacity:0; transform:translateY(26px) scale(.96); } to { opacity:1; transform:none; } }
+
+/* =====================================================================
+   3D EFFECTS  (tilt cards, flip cards, shield, page depth, podium,
+   goal celebration, animated table, three.js stage, 3D pitch)
+   Everything here is additive. Reduced-motion users get no animation.
+   ===================================================================== */
+
+/* ---------- 1. tilt cards ---------- */
+.fx-t { transition:transform .5s cubic-bezier(.2,.9,.3,1), box-shadow .3s; transform-style:flat; }
+.fx-t:not(.fx-rest) { transition:transform .12s ease-out, box-shadow .3s; will-change:transform; }
+.card.fx-t { position:relative; }
+.card.fx-t::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition:opacity .25s;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.22), rgba(255,255,255,0) 58%); }
+.card.fx-t.fx-on::after { opacity:1; }
+.fx-t.fx-on { box-shadow:0 18px 36px rgba(6,16,70,.18); }
+
+/* ---------- 2. flip card (player card popup) ---------- */
+.fx-flip { perspective:900px; width:230px; max-width:100%; margin:6px auto 8px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.fx-flip-in { display:grid; transform-style:preserve-3d; transition:transform .75s cubic-bezier(.2,.9,.3,1.08); animation:fxFlipIn .95s cubic-bezier(.2,.9,.3,1.08) backwards; }
+.fx-flip.flipped .fx-flip-in { transform:rotateY(180deg); }
+.fx-face { grid-area:1/1; -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+.fx-back { transform:rotateY(180deg); border-radius:16px; padding:16px 14px; text-align:left; color:#fff; font-size:13px; line-height:1.35;
+  display:flex; flex-direction:column; justify-content:center; gap:6px; box-shadow:0 12px 28px rgba(6,16,70,.35);
+  background:linear-gradient(160deg,#061046,#0c3ce0); border:1px solid rgba(255,255,255,.18); }
+.fx-back b.fx-bt { font:400 26px/1 var(--font-head); text-transform:uppercase; letter-spacing:.5px; }
+.fx-back small { color:#b9c6f5; display:block; margin-bottom:4px; }
+.fx-back div { border-top:1px solid rgba(255,255,255,.14); padding-top:5px; }
+.fx-hint { text-align:center; margin:0 0 12px; }
+@keyframes fxFlipIn { from { transform:rotateY(-180deg) scale(.55); opacity:0; } to { transform:rotateY(0) scale(1); opacity:1; } }
+
+/* ---------- 3. header shield ---------- */
+.brand-logo { position:relative; perspective:700px; cursor:pointer; }
+.brand-logo::before { content:""; position:absolute; left:50%; top:50%; width:160%; height:160%; transform:translate(-50%,-50%); pointer-events:none;
+  background:radial-gradient(circle, rgba(245,179,1,.38), rgba(245,179,1,0) 62%); animation:fxGlow 3.4s ease-in-out infinite; }
+.brand-svg { position:relative; transform-style:preserve-3d; animation:fxShield 7s ease-in-out infinite;
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.5)) drop-shadow(0 0 14px rgba(245,179,1,.35)); }
+.brand-logo.fx-spin .brand-svg { animation:fxSpin 1.1s cubic-bezier(.3,.8,.3,1) both; }
+@keyframes fxShield { 0%,100% { transform:rotateY(-22deg) rotateX(4deg) translateY(0); } 50% { transform:rotateY(22deg) rotateX(-3deg) translateY(-5px); } }
+@keyframes fxSpin { from { transform:rotateY(0) scale(1); } 50% { transform:rotateY(540deg) scale(1.15); } to { transform:rotateY(1080deg) scale(1); } }
+@keyframes fxGlow { 0%,100% { opacity:.55; } 50% { opacity:1; } }
+
+/* ---------- 4. page transitions with depth ---------- */
+::view-transition-old(page) { animation:fxPgOut .22s ease both; transform-origin:50% 0; }
+::view-transition-new(page) { animation:fxPgIn .55s cubic-bezier(.22,.9,.3,1) both; transform-origin:50% 0; }
+#app.fx-pg { animation:fxPgIn .55s cubic-bezier(.22,.9,.3,1) backwards; transform-origin:50% 0; }
+@keyframes fxPgOut { to { opacity:0; transform:perspective(900px) translateZ(-90px) rotateX(5deg) translateY(-10px); } }
+@keyframes fxPgIn { from { opacity:0; transform:perspective(900px) translateZ(-140px) rotateX(-8deg) translateY(26px); } }
+
+/* ---------- 5. podium for the top three ---------- */
+.fx-podium { display:flex; align-items:flex-end; justify-content:center; gap:22px; margin:0 0 18px; padding:20px 14px 0; border-radius:20px; overflow:hidden;
+  perspective:900px; background:linear-gradient(180deg,#061046,#0c2a9a); }
+.fxp-col { flex:1 1 0; max-width:190px; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-right:14px; }
+.fxp-team { text-align:center; color:#fff; cursor:pointer; padding-bottom:12px; max-width:100%; animation:fxDrop .6s ease var(--d2,0s) backwards; }
+.fxp-team .badge { margin:0 auto 4px; }
+.fxp-team b { display:block; font:400 clamp(15px,4.1vw,24px)/1.05 var(--font-head); text-transform:uppercase; letter-spacing:.3px; overflow-wrap:break-word; }
+.fxp-team small { display:block; color:#b9c6f5; font-size:12px; margin-top:2px; }
+.fxp-crown { display:block; font-style:normal; font-size:30px; line-height:1; transform-style:preserve-3d; animation:fxCrown 3.2s ease-in-out infinite; }
+.fxp-block { position:relative; width:100%; height:var(--h); display:flex; justify-content:center; background:var(--front);
+  animation:fxRise .9s cubic-bezier(.2,.9,.25,1.05) var(--d,0s) backwards; }
+.fxp-block > span { margin-top:10px; font:400 clamp(40px,10vw,64px)/1 var(--font-head); color:rgba(0,0,0,.3); }
+.fxp-block::before { content:""; position:absolute; left:0; right:0; top:-14px; height:14px; background:var(--top); transform:skewX(-45deg); transform-origin:0 100%; }
+.fxp-block::after { content:""; position:absolute; right:-14px; top:0; width:14px; height:100%; background:var(--side); transform:skewY(-45deg); transform-origin:0 0; }
+.fxp-col.p1 { --h:150px; --d:.6s; --d2:1.2s; --front:linear-gradient(180deg,#ffd75e,#d99a00); --top:#fff0a8; --side:#a87400; }
+.fxp-col.p2 { --h:112px; --d:.3s; --d2:.9s; --front:linear-gradient(180deg,#d6dce8,#8d98aa); --top:#f1f4f9; --side:#667283; }
+.fxp-col.p3 { --h:84px;  --d:.1s; --d2:.7s; --front:linear-gradient(180deg,#e0a56d,#9b5f31); --top:#f3c697; --side:#704220; }
+.fxp-col.p1 .fxp-block { filter:drop-shadow(0 0 16px rgba(255,200,40,.55)); }
+@keyframes fxRise { from { height:0; } }
+@keyframes fxDrop { from { opacity:0; transform:translateY(-26px) rotateX(40deg); } }
+@keyframes fxCrown { 0%,100% { transform:rotateY(-35deg) translateY(0); } 50% { transform:rotateY(35deg) translateY(-4px); } }
+@media (max-width:480px) {
+  .fx-podium { gap:16px; padding:16px 10px 0; }
+  .fxp-col.p1 { --h:120px; } .fxp-col.p2 { --h:90px; } .fxp-col.p3 { --h:66px; }
+}
+#app.fx-same .fx-podium *, #app.fx-same .fx-podium { animation:none !important; }
+
+/* ---------- 6. goal celebration ---------- */
+.fxg { position:fixed; inset:0; z-index:400; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; perspective:800px; overflow:hidden; }
+.fxg-ball { font-size:110px; line-height:1; filter:drop-shadow(0 14px 18px rgba(0,0,0,.45)); animation:fxBall 2.8s cubic-bezier(.2,.9,.3,1) both; }
+.fxg-card { margin-top:8px; text-align:center; color:#fff; background:rgba(6,16,70,.92); border:1px solid rgba(255,255,255,.25); border-radius:16px; padding:12px 22px;
+  box-shadow:0 18px 40px rgba(0,0,0,.4); animation:fxGoalTxt 2.8s ease both; max-width:88vw; }
+.fxg-card small { display:block; color:#8fb6ff; font:600 12px var(--font-head); letter-spacing:3px; text-transform:uppercase; }
+.fxg-card b { display:block; font:400 clamp(26px,7vw,40px)/1.05 var(--font-head); text-transform:uppercase; letter-spacing:.5px; }
+.fxg-card em { display:block; font-style:normal; color:#b9c6f5; font-size:12px; margin-top:2px; }
+.fxg i { position:absolute; top:-4vh; width:9px; height:15px; border-radius:2px; transform-style:preserve-3d; animation:fxFall var(--t,2.4s) ease-in var(--dl,0s) both; }
+@keyframes fxBall { 0% { transform:translateZ(-700px) rotateY(0) scale(.2); opacity:0; } 35% { opacity:1; }
+  60% { transform:translateZ(0) rotateY(720deg) scale(1.18); } 100% { transform:translateZ(0) rotateY(1080deg) scale(1); opacity:1; } }
+@keyframes fxGoalTxt { 0%,25% { opacity:0; transform:translateY(24px) rotateX(-50deg); } 45%,85% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(-10px); } }
+@keyframes fxFall { 0% { transform:translate3d(0,0,0) rotateX(0) rotateY(0); opacity:1; } 100% { transform:translate3d(var(--dx,0),112vh,0) rotateX(720deg) rotateY(540deg); opacity:.9; } }
+
+/* ---------- 7. animated league table: moved-row glow is done in JS (WAAPI) ---------- */
+table.st td { position:relative; }
+
+/* ---------- 8. three.js trophy / ball stage ---------- */
+.fx-stage { position:relative; height:230px; margin:0 0 18px; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,.12);
+  background:radial-gradient(ellipse at 50% 30%, #1b45e8 0%, #0a1f8f 45%, #061046 100%); box-shadow:0 14px 34px rgba(6,16,70,.25); }
+.fx-stage canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:pan-y; cursor:grab; }
+.fxs-top { position:absolute; left:14px; right:12px; top:12px; display:flex; justify-content:space-between; align-items:flex-start; pointer-events:none; color:#fff; }
+.fxs-top small { display:block; color:#8fb6ff; font:600 12px var(--font-head); letter-spacing:3px; text-transform:uppercase; }
+.fxs-top b { display:block; font:400 clamp(22px,5vw,30px)/1 var(--font-head); text-transform:uppercase; letter-spacing:.5px; }
+.fxs-btns { display:flex; gap:6px; pointer-events:auto; }
+.fxs-btns button { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1); color:#fff; font-size:18px; cursor:pointer; }
+.fxs-btns button.on { background:#fff; }
+.fxs-hint { position:absolute; left:0; right:0; bottom:8px; text-align:center; color:rgba(255,255,255,.55); font-size:11px; letter-spacing:2px; text-transform:uppercase; pointer-events:none; }
+@media (max-width:480px) { .fx-stage { height:200px; } }
+
+/* ---------- 9. 3D pitch / line-up ---------- */
+.fxp-ctl { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin:2px 0 6px; }
+.fxp-ctl label { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+.fxp-ctl input[type=range] { width:120px; padding:0; }
+.fx-pw { --tilt:52deg; position:relative; max-width:440px; margin:0 auto; perspective:1000px; }
+.fx-pitch { position:absolute; left:0; right:0; top:50%; aspect-ratio:3/4; transform:translateY(-50%) rotateX(var(--tilt)); transform-style:preserve-3d; border-radius:6px;
+  background:repeating-linear-gradient(0deg,#2d9a4d 0 11.11%,#37ae5b 11.11% 22.22%); box-shadow:0 36px 44px rgba(0,0,0,.35), 0 0 0 4px #1f7a3b; }
+.fx-pitch .ln { position:absolute; border:2px solid rgba(255,255,255,.85); pointer-events:none; }
+.fx-pitch .l-out { inset:3%; }
+.fx-pitch .l-mid { left:3%; right:3%; top:50%; height:0; border-width:2px 0 0; }
+.fx-pitch .l-cc { left:38%; width:24%; top:calc(50% - 9%); aspect-ratio:1; border-radius:50%; }
+.fx-pitch .l-pt { left:22%; width:56%; top:3%; height:15%; }
+.fx-pitch .l-pb { left:22%; width:56%; bottom:3%; height:15%; }
+.fx-pitch .l-st { left:36%; width:28%; top:3%; height:6%; }
+.fx-pitch .l-sb { left:36%; width:28%; bottom:3%; height:6%; }
+.fx-pl { position:absolute; width:0; height:0; transform-style:preserve-3d; }
+.fx-pl > div { position:absolute; left:0; bottom:0; transform:translate(-50%,0) rotateX(calc(var(--tilt) * -1)); transform-origin:50% 100%; display:flex; flex-direction:column; align-items:center; animation:fxPlIn .6s cubic-bezier(.2,.9,.3,1.2) var(--pd,0s) backwards; }
+.fx-pl .c { position:relative; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fff; color:#061046;
+  font:700 11px var(--font-body); border:3px solid var(--ring,#0c3ce0); box-shadow:0 6px 10px rgba(0,0,0,.35); }
+.fx-pl.GK .c { background:#ffd23f; --ring:#a87400; }
+.fx-pl.DEF { --ring:#0c3ce0; } .fx-pl.MID { --ring:#0b9c8a; } .fx-pl.FWD { --ring:#d62839; }
+.fx-pl .g { position:absolute; right:-9px; top:-8px; background:#061046; color:#fff; border-radius:9px; font:700 9px var(--font-body); padding:1px 4px; }
+.fx-pl .n { margin-top:3px; max-width:78px; padding:1px 6px; border-radius:8px; background:rgba(6,16,70,.85); color:#fff; font:600 10px/1.3 var(--font-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@keyframes fxPlIn { from { opacity:0; transform:translate(-50%,-60px) rotateX(calc(var(--tilt) * -1)); } }
+@media (max-width:480px) { .fx-pl .c { width:30px; height:30px; font-size:10px; } .fx-pl .n { font-size:9px; max-width:64px; } }
+
+/* motion-sensitive users: no continuous 3D motion */
+@media (prefers-reduced-motion:reduce) {
+  .brand-svg, .brand-logo::before, .fxp-crown { animation:none !important; }
+  .fx-t { transition:none !important; transform:none !important; }
+}
 </style>
 </head>
 <body>
@@ -724,6 +860,429 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
 
 <nav id="nav"></nav>
 <main><div class="wrap"><p class="status" id="status"></p><div id="app"></div></div></main>
+
+<script id="fx3d">
+/* =====================================================================
+   3D EFFECTS  ·  additive layer. Reads the site's globals at run time
+   (currentTab, results, teams, squads ...) and never edits site data.
+   ===================================================================== */
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) { return; }
+  var calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function G(fn, fallback) { try { return fn(); } catch (e) { return fallback; } }
+
+  // ------------------------------------------------------------------
+  // 5. PODIUM (called from pageStandings)
+  // ------------------------------------------------------------------
+  window.fxPodium = function (rows) {
+    try {
+      if (!rows || rows.length < 3 || !rows[0].played) { return ""; }
+      var order = [1, 0, 2], cls = ["p2", "p1", "p3"];
+      return "<div class='fx-podium' aria-label='Top three teams'>" + order.map(function (idx, k) {
+        var r = rows[idx], gd = r.gf - r.ga;
+        return "<div class='fxp-col " + cls[k] + "'><div class='fxp-team' onclick=\"openTeam('" + r.code + "')\">" +
+          (idx === 0 ? "<i class='fxp-crown'>👑</i>" : "") +
+          "<span class='badge'>" + esc(initials(r.name)) + "</span><b>" + esc(r.name) + "</b>" +
+          "<small>" + r.points + " pts · GD " + (gd > 0 ? "+" + gd : gd) + "</small></div>" +
+          "<div class='fxp-block'><span>" + (idx + 1) + "</span></div></div>";
+      }).join("") + "</div>";
+    } catch (e) { return ""; }
+  };
+
+  // ------------------------------------------------------------------
+  // 1. TILT CARDS (mouse hover, touch press-and-hold)
+  // ------------------------------------------------------------------
+  var TILT_SEL = ".card:not(.scroll):not(.hall):not(.login), .pcard, .hlbox, .award, .ovc, .trophy, .stat, .mteam, .tile";
+  function markTilt(root) {
+    root.querySelectorAll(TILT_SEL).forEach(function (el) {
+      if (el.getAttribute("data-fxt")) { return; }
+      el.setAttribute("data-fxt", "1");
+      if (el.querySelector("input,select,textarea,table") || el.closest(".ovl,.modal,.intro,.fx-stage,.fx-flip")) { return; }
+      el.classList.add("fx-t", "fx-rest");
+    });
+  }
+  var curEl = null, lastEv = null, raf = 0, holdTimer = 0, touchEl = null;
+  function tiltTo(el, e) {
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) { return; }
+    var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+    var big = r.width > 380 || r.height > 260, max = big ? 3.5 : 9;
+    el.classList.remove("fx-rest"); el.classList.add("fx-on");
+    el.style.setProperty("--mx", ((px + 0.5) * 100).toFixed(1) + "%");
+    el.style.setProperty("--my", ((py + 0.5) * 100).toFixed(1) + "%");
+    el.style.transform = "perspective(900px)" + (el.classList.contains("pcard") ? " translateY(-5px)" : "") +
+      " rotateX(" + (-py * 2 * max).toFixed(2) + "deg) rotateY(" + (px * 2 * max).toFixed(2) + "deg) scale(" + (big ? 1.004 : 1.03) + ")";
+  }
+  function untilt(el) {
+    if (!el) { return; }
+    el.classList.remove("fx-on"); el.classList.add("fx-rest"); el.style.transform = "";
+  }
+  document.addEventListener("pointermove", function (e) {
+    if (calm || e.pointerType === "touch") { return; }
+    var el = e.target && e.target.closest ? e.target.closest(".fx-t") : null;
+    if (el !== curEl) { untilt(curEl); curEl = el; }
+    if (el) {
+      lastEv = e;
+      if (!raf) { raf = requestAnimationFrame(function () { raf = 0; if (curEl && lastEv) { tiltTo(curEl, lastEv); } }); }
+    }
+  }, { passive: true });
+  document.addEventListener("mouseleave", function () { untilt(curEl); curEl = null; });
+  window.addEventListener("blur", function () { untilt(curEl); curEl = null; });
+  // touch: only after a short hold, so normal scrolling never jiggles cards
+  document.addEventListener("pointerdown", function (e) {
+    if (calm || e.pointerType !== "touch") { return; }
+    var el = e.target && e.target.closest ? e.target.closest(".fx-t") : null;
+    if (!el) { return; }
+    var snap = { clientX: e.clientX, clientY: e.clientY };
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function () { touchEl = el; tiltTo(el, snap); }, 140);
+  }, { passive: true });
+  function endTouch() { clearTimeout(holdTimer); if (touchEl) { untilt(touchEl); touchEl = null; } }
+  document.addEventListener("pointerup", endTouch, { passive: true });
+  document.addEventListener("pointercancel", endTouch, { passive: true });
+
+  // ------------------------------------------------------------------
+  // 3. header shield: tap to spin
+  // ------------------------------------------------------------------
+  document.addEventListener("click", function (e) {
+    var l = e.target && e.target.closest ? e.target.closest(".brand-logo") : null;
+    if (!l || calm) { return; }
+    l.classList.remove("fx-spin"); void l.offsetWidth; l.classList.add("fx-spin");
+    setTimeout(function () { l.classList.remove("fx-spin"); }, 1200);
+  });
+
+  // ------------------------------------------------------------------
+  // 7. ANIMATED LEAGUE TABLE (FLIP technique on table cells)
+  // ------------------------------------------------------------------
+  var tableSnap = null;
+  function readTable() {
+    var t = app.querySelector("table.st");
+    if (!t) { return null; }
+    var rows = [].slice.call(t.querySelectorAll("tr")).filter(function (tr) { return tr.querySelector("a.tl"); });
+    var map = {}, order = [];
+    rows.forEach(function (tr) {
+      var a = tr.querySelector("a.tl"), m = /openTeam\('([^']+)'\)/.exec(a.getAttribute("onclick") || "");
+      if (!m) { return; }
+      map[m[1]] = { tr: tr, top: tr.offsetTop };
+      order.push(m[1]);
+    });
+    return { season: G(function () { return currentSeason; }, 0), map: map, order: order };
+  }
+  function animateTable(prev, now) {
+    if (calm || !prev || !now || prev.season !== now.season) { return; }
+    if (prev.order.join() === now.order.join()) { return; }
+    now.order.forEach(function (code) {
+      var o = prev.map[code], n = now.map[code];
+      if (!o || !n) { return; }
+      var dy = o.top - n.top;
+      if (Math.abs(dy) < 2) { return; }
+      var up = dy > 0, glow = up ? "rgba(46,160,67,.35)" : "rgba(214,40,57,.25)";
+      [].slice.call(n.tr.children).forEach(function (td) {
+        if (!td.animate) { return; }
+        td.style.zIndex = up ? 3 : 1;
+        var a = td.animate([
+          { transform: "translateY(" + dy + "px)", backgroundColor: glow },
+          { transform: "translateY(0)", backgroundColor: glow, offset: 0.7 },
+          { transform: "translateY(0)", backgroundColor: "rgba(0,0,0,0)" }
+        ], { duration: 1100, easing: "cubic-bezier(.2,.8,.2,1)" });
+        a.onfinish = a.oncancel = function () { td.style.zIndex = ""; };
+      });
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // 6. GOAL CELEBRATION (when a result is logged or arrives live)
+  // ------------------------------------------------------------------
+  var goalBase = null, lastCelebrate = 0;
+  function resultSig() {
+    var o = {};
+    G(function () {
+      Object.keys(results).forEach(function (id) {
+        var r = results[id];
+        if (r && r.h !== "" && r.a !== "" && r.h != null && r.a != null) { o[id] = Number(r.h) + "-" + Number(r.a); }
+      });
+    }, null);
+    return o;
+  }
+  function checkGoals() {
+    var ok = G(function () { return loaded; }, false);
+    if (!ok) { return; }
+    var season = G(function () { return currentSeason; }, 0), sig = resultSig(), changed = [];
+    if (goalBase && goalBase.season === season) {
+      Object.keys(sig).forEach(function (id) { if (sig[id] !== goalBase.sig[id]) { changed.push(id); } });
+    }
+    goalBase = { season: season, sig: sig };
+    if (!changed.length || changed.length > 4 || calm) { return; }
+    var now = Date.now();
+    if (now - lastCelebrate < 4000) { return; }
+    lastCelebrate = now;
+    var m = G(function () { return buildFixtures().reduce(function (a, r) { return a.concat(r); }, []).filter(function (x) { return x.id === changed[0]; })[0]; }, null);
+    if (!m) { return; }
+    var p = sig[changed[0]].split("-"), total = Number(p[0]) + Number(p[1]);
+    celebrate(total > 0 ? "⚽" : "🧤", total > 0 ? "Goal!" : "Clean sheet", teams[m.home] + " " + p[0] + " - " + p[1] + " " + teams[m.away],
+      changed.length > 1 ? "+" + (changed.length - 1) + " more result" + (changed.length > 2 ? "s" : "") : "Full time");
+  }
+  function celebrate(icon, title, score, note) {
+    var old = document.querySelector(".fxg"); if (old) { old.remove(); }
+    var box = document.createElement("div"); box.className = "fxg"; box.setAttribute("aria-hidden", "true");
+    var cols = ["#0c3ce0", "#d62839", "#f5b301", "#ffffff", "#8fb6ff"], h = "";
+    for (var i = 0; i < 38; i++) {
+      h += "<i style='left:" + (Math.random() * 100).toFixed(1) + "%;background:" + cols[i % cols.length] + ";--dx:" + Math.round((Math.random() - 0.5) * 160) + "px;--t:" +
+        (1.8 + Math.random() * 1.6).toFixed(2) + "s;--dl:" + (Math.random() * 0.7).toFixed(2) + "s'></i>";
+    }
+    box.innerHTML = h + "<div class='fxg-ball'>" + icon + "</div><div class='fxg-card'><small>" + esc(note) + "</small><b>" + esc(title) + "</b><em>" + esc(score) + "</em></div>";
+    document.body.appendChild(box);
+    setTimeout(function () { if (box.parentNode) { box.remove(); } }, 3400);
+  }
+  window.fxCelebrate = celebrate;   // handy for testing: fxCelebrate("⚽","Goal!","A 2 - 1 B","Full time")
+
+  // ------------------------------------------------------------------
+  // 9. 3D PITCH LINE-UP (team page)
+  // ------------------------------------------------------------------
+  var FORMS = {
+    "4-3-3": [["GK", 50, 90], ["LB", 14, 71], ["CB", 38, 74], ["CB", 62, 74], ["RB", 86, 71], ["CMF", 26, 54], ["DMF", 50, 58], ["CMF", 74, 54], ["LWF", 16, 26], ["CF", 50, 20], ["RWF", 84, 26]],
+    "4-4-2": [["GK", 50, 90], ["LB", 14, 71], ["CB", 38, 74], ["CB", 62, 74], ["RB", 86, 71], ["LMF", 14, 50], ["CMF", 38, 55], ["CMF", 62, 55], ["RMF", 86, 50], ["CF", 36, 24], ["CF", 64, 24]],
+    "4-2-3-1": [["GK", 50, 90], ["LB", 14, 71], ["CB", 38, 74], ["CB", 62, 74], ["RB", 86, 71], ["DMF", 36, 58], ["DMF", 64, 58], ["LMF", 16, 38], ["AMF", 50, 40], ["RMF", 84, 38], ["CF", 50, 17]],
+    "3-5-2": [["GK", 50, 90], ["CB", 24, 74], ["CB", 50, 77], ["CB", 76, 74], ["LMF", 9, 50], ["CMF", 30, 56], ["DMF", 50, 60], ["CMF", 70, 56], ["RMF", 91, 50], ["CF", 36, 22], ["CF", 64, 22]],
+    "3-4-3": [["GK", 50, 90], ["CB", 24, 74], ["CB", 50, 77], ["CB", 76, 74], ["LMF", 14, 52], ["CMF", 38, 56], ["CMF", 62, 56], ["RMF", 86, 52], ["LWF", 18, 26], ["CF", 50, 20], ["RWF", 82, 26]]
+  };
+  var GROUP = { GK: "GK", CB: "DEF", LB: "DEF", RB: "DEF", LWB: "DEF", RWB: "DEF", DMF: "MID", CMF: "MID", LMF: "MID", RMF: "MID", AMF: "MID", LWF: "FWD", RWF: "FWD", SS: "FWD", CF: "FWD" };
+  var POS_RE = /\b(GK|CB|LB|RB|LWB|RWB|DMF|CMF|LMF|RMF|AMF|LWF|RWF|SS|CF)\b/i;
+  var fxForm = "4-3-3", fxTilt = 52;
+
+  function parsePlayers(code) {
+    var sq = G(function () { return squads[code]; }, null);
+    if (!sq) { return []; }
+    return playerList(sq.players || "").map(function (raw) {
+      var inb = /\(([^)]*)\)/.exec(raw), m = POS_RE.exec(inb ? inb[1] : raw);
+      var pos = m ? m[1].toUpperCase() : "";
+      return { raw: raw, name: cleanPlayer(raw), pos: pos, grp: GROUP[pos] || "" };
+    });
+  }
+  function pickXI(players, formation) {
+    var slots = formation.map(function (s) { return { role: s[0], x: s[1], y: s[2], p: null }; });
+    var pool = players.slice();
+    function take(fn, slot) {
+      var i = pool.findIndex(fn);
+      if (i >= 0) { slot.p = pool.splice(i, 1)[0]; }
+    }
+    slots.forEach(function (s) { take(function (p) { return p.pos === s.role; }, s); });
+    slots.forEach(function (s) { if (!s.p) { take(function (p) { return p.grp && p.grp === GROUP[s.role]; }, s); } });
+    slots.forEach(function (s) { if (!s.p) { take(function (p) { return s.role === "GK" ? true : p.grp !== "GK"; }, s); } });
+    return slots;
+  }
+  function surname(n) { var w = n.split(" "); return w.length > 1 ? w[w.length - 1] : n; }
+  function pitchInner(code) {
+    var players = parsePlayers(code), slots = pickXI(players, FORMS[fxForm]);
+    var known = players.filter(function (p) { return p.pos; }).length;
+    var h = "<div class='ln l-out'></div><div class='ln l-mid'></div><div class='ln l-cc'></div><div class='ln l-pt'></div><div class='ln l-pb'></div><div class='ln l-st'></div><div class='ln l-sb'></div>";
+    slots.forEach(function (s, i) {
+      if (!s.p) { return; }
+      var pos = s.p.pos || s.role, goals = G(function () { return goalTag(code, s.p.raw).replace(/<[^>]*>/g, "").replace(/\D/g, ""); }, "");
+      h += "<div class='fx-pl " + (GROUP[pos] || GROUP[s.role]) + "' style='left:" + s.x + "%;top:" + s.y + "%'><div style='--pd:" + (i * 0.04).toFixed(2) + "s'><span class='c'>" + esc(pos) +
+        (goals ? "<span class='g'>⚽" + goals + "</span>" : "") + "</span><span class='n'>" + esc(surname(s.p.name)) + "</span></div></div>";
+    });
+    return { html: h, count: players.length, known: known };
+  }
+  function sizePitch(pw) {
+    var w = pw.clientWidth || 320, t = fxTilt * Math.PI / 180, P = 1000, H = w * 4 / 3;
+    var zz = (H / 2) * Math.sin(t), yy = (H / 2) * Math.cos(t), near = yy * P / (P - zz), far = yy * P / (P + zz);
+    pw.style.height = Math.round(near + far + 56) + "px";            // room for the standing players above the far edge
+    var pitch = pw.querySelector(".fx-pitch"); if (pitch) { pitch.style.top = Math.round(far + 44) + "px"; }
+    pw.style.setProperty("--tilt", fxTilt + "deg");
+  }
+  function pitchCardHtml(code) {
+    return "<div class='card fx-pitchcard'><h3>3D line-up <span class='legend'>starting XI</span></h3><div class='fxp-ctl'>" +
+      "<select class='fxf' aria-label='Formation'>" + Object.keys(FORMS).map(function (f) { return "<option" + (f === fxForm ? " selected" : "") + ">" + f + "</option>"; }).join("") + "</select>" +
+      "<label>Tilt <input class='fxt' type='range' min='15' max='75' value='" + fxTilt + "'></label></div>" +
+      "<div class='fx-pw'><div class='fx-pitch'></div></div><p class='legend fxp-note'></p></div>";
+  }
+  function fillPitch(card) {
+    var code = G(function () { return currentTeam; }, ""), pw = card.querySelector(".fx-pw"), pitch = card.querySelector(".fx-pitch");
+    if (!code || !pitch) { return; }
+    var r = pitchInner(code);
+    pitch.innerHTML = r.html;
+    sizePitch(pw);
+    card.querySelector(".fxp-note").textContent = !r.count ? "Add the squad to see the line-up." :
+      "Picked automatically from " + r.count + " players using the position in brackets, e.g. Player (CF)." + (r.known < 8 ? " Add more positions to improve this." : "");
+  }
+  function mountPitch() {
+    if (app.querySelector(".fx-pitchcard") || !app.querySelector(".card.thead")) { return; }
+    var squadCard = [].slice.call(app.querySelectorAll(".card")).filter(function (c) { return c.querySelector(".plist"); })[0];
+    if (!squadCard) { return; }
+    var wrap = document.createElement("div"); wrap.innerHTML = pitchCardHtml();
+    var card = wrap.firstChild;
+    squadCard.parentNode.insertBefore(card, squadCard);
+    fillPitch(card);
+  }
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains("fxf")) { fxForm = e.target.value; var c = e.target.closest(".fx-pitchcard"); if (c) { fillPitch(c); } }
+  });
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains("fxt")) {
+      fxTilt = Number(e.target.value); var pw = e.target.closest(".fx-pitchcard").querySelector(".fx-pw"); sizePitch(pw);
+    }
+  });
+  window.addEventListener("resize", function () { var pw = app.querySelector(".fx-pw"); if (pw) { sizePitch(pw); } });
+
+  // ------------------------------------------------------------------
+  // 8. THREE.JS STAGE: trophy + football (Home and Awards)
+  // ------------------------------------------------------------------
+  var stage = null, stageLoading = false, stageFailed = false, running = false, mode = "trophy", dirty = true, boost = 0, dragX = null, rotY = 0.4;
+  function loadThree(cb) {
+    if (window.THREE) { cb(true); return; }
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    s.onload = function () { cb(!!window.THREE); };
+    s.onerror = function () { cb(false); };
+    document.head.appendChild(s);
+  }
+  function makeTrophy(T) {
+    var g = new T.Group();
+    var gold = new T.MeshPhongMaterial({ color: 0xf2b705, specular: 0xfff1b0, shininess: 110, side: T.DoubleSide });
+    var dark = new T.MeshPhongMaterial({ color: 0x14182e, specular: 0x6677aa, shininess: 80 });
+    var pts = [[0, 1.0], [0.28, 1.02], [0.22, 1.25], [0.14, 1.55], [0.16, 1.95], [0.5, 2.1], [0.95, 2.55], [1.15, 3.2], [1.2, 3.8], [1.18, 4.15], [1.08, 4.15], [1.05, 3.8], [0.95, 3.2], [0.7, 2.7], [0, 2.6]]
+      .map(function (p) { return new T.Vector2(p[0], p[1]); });
+    var cup = new T.Mesh(new T.LatheGeometry(pts, 56), gold); cup.position.y = -0.4; g.add(cup);
+    var ring = new T.Mesh(new T.TorusGeometry(0.27, 0.07, 14, 36), gold); ring.rotation.x = Math.PI / 2; ring.position.y = 1.2; g.add(ring);
+    [1, -1].forEach(function (side) {
+      var h = new T.Mesh(new T.TorusGeometry(0.62, 0.09, 14, 36, Math.PI), gold);
+      h.rotation.z = side * -Math.PI / 2; h.position.set(side * 1.12, 2.9, 0); h.scale.set(0.85, 1, 1); g.add(h);
+    });
+    var base1 = new T.Mesh(new T.CylinderGeometry(1.0, 1.2, 0.35, 48), dark); base1.position.y = 0.18; g.add(base1);
+    var base2 = new T.Mesh(new T.CylinderGeometry(0.75, 1.0, 0.25, 48), gold); base2.position.y = 0.47; g.add(base2);
+    var ball = new T.Mesh(new T.SphereGeometry(0.34, 24, 18), new T.MeshPhongMaterial({ color: 0xffffff, shininess: 90 })); ball.position.y = 3.95; g.add(ball);
+    g.position.y = -1.9;
+    return g;
+  }
+  function ballTexture(T) {
+    var W = 1024, H = 512, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"), phi = (1 + Math.sqrt(5)) / 2;
+    x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, H);
+    var v = [[0, 1, phi], [0, 1, -phi], [0, -1, phi], [0, -1, -phi], [1, phi, 0], [1, -phi, 0], [-1, phi, 0], [-1, -phi, 0], [phi, 0, 1], [phi, 0, -1], [-phi, 0, 1], [-phi, 0, -1]];
+    v.forEach(function (p) {
+      var l = Math.sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), nx = p[0] / l, ny = p[1] / l, nz = p[2] / l;
+      var u = 0.5 + Math.atan2(nz, nx) / (2 * Math.PI), lat = Math.asin(ny), cx = u * W, cy = (0.5 - lat / Math.PI) * H;
+      var stretch = 1 / Math.max(Math.cos(lat), 0.3), r = 46;
+      [-W, 0, W].forEach(function (off) {
+        x.beginPath();
+        for (var i = 0; i < 5; i++) { var a = -Math.PI / 2 + i * 2 * Math.PI / 5; x[i ? "lineTo" : "moveTo"](cx + off + Math.cos(a) * r * stretch, cy + Math.sin(a) * r); }
+        x.closePath(); x.fillStyle = "#101828"; x.fill();
+      });
+    });
+    var t = new T.CanvasTexture(c); t.anisotropy = 4; return t;
+  }
+  function buildStage(T) {
+    var el = document.createElement("div"); el.className = "fx-stage";
+    el.innerHTML = "<canvas aria-label='3D trophy, drag to rotate'></canvas><div class='fxs-top'><div><small>League</small><b></b></div>" +
+      "<div class='fxs-btns'><button type='button' data-m='trophy' class='on' aria-label='Trophy'>🏆</button><button type='button' data-m='ball' aria-label='Ball'>⚽</button></div></div>" +
+      "<div class='fxs-hint'>Drag to spin</div>";
+    var canvas = el.querySelector("canvas");
+    var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(35, 2, 0.1, 100); cam.position.set(0, 0.8, 11); cam.lookAt(0, 0, 0);
+    scene.add(new T.AmbientLight(0xffffff, 0.55));
+    var key = new T.DirectionalLight(0xffffff, 1.1); key.position.set(3, 5, 4); scene.add(key);
+    var warm = new T.PointLight(0xffb800, 1.1, 30); warm.position.set(-5, 2, 4); scene.add(warm);
+    var cool = new T.PointLight(0x4f7bff, 0.9, 30); cool.position.set(5, -1, -3); scene.add(cool);
+    var trophy = makeTrophy(T); scene.add(trophy);
+    var ball = new T.Mesh(new T.SphereGeometry(1.55, 48, 32), new T.MeshPhongMaterial({ map: ballTexture(T), specular: 0x555555, shininess: 55 })); ball.visible = false; scene.add(ball);
+    var N = 70, pos = new Float32Array(N * 3);
+    for (var i = 0; i < N; i++) { var a = Math.random() * 6.283, r = 2.4 + Math.random() * 2.2; pos[i * 3] = Math.cos(a) * r; pos[i * 3 + 1] = (Math.random() - 0.5) * 5; pos[i * 3 + 2] = Math.sin(a) * r; }
+    var pg = new T.BufferGeometry(); pg.setAttribute("position", new T.BufferAttribute(pos, 3));
+    var sparks = new T.Points(pg, new T.PointsMaterial({ color: 0xfff1b0, size: 0.07, transparent: true, opacity: 0.85 })); scene.add(sparks);
+    function resize() {
+      var w = el.clientWidth, h = el.clientHeight; if (!w || !h) { return; }
+      renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); dirty = true;
+    }
+    if (window.ResizeObserver) { new ResizeObserver(resize).observe(el); } else { window.addEventListener("resize", resize); }
+    canvas.addEventListener("pointerdown", function (e) { dragX = e.clientX; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} canvas.style.cursor = "grabbing"; });
+    canvas.addEventListener("pointermove", function (e) { if (dragX === null) { return; } rotY += (e.clientX - dragX) * 0.012; dragX = e.clientX; dirty = true; });
+    function up() { if (dragX !== null) { dragX = null; canvas.style.cursor = ""; } }
+    canvas.addEventListener("pointerup", function (e) { if (dragX !== null && Math.abs(e.clientX - dragX) < 3) { boost = 0.22; } up(); });
+    canvas.addEventListener("pointercancel", up);
+    el.querySelector(".fxs-btns").addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) { return; }
+      mode = b.getAttribute("data-m"); trophy.visible = mode === "trophy"; ball.visible = mode === "ball";
+      [].forEach.call(el.querySelectorAll(".fxs-btns button"), function (x) { x.classList.toggle("on", x === b); });
+      el.querySelector(".fxs-top small").textContent = mode === "trophy" ? "League" : "Match ball";
+      boost = 0.2; dirty = true;
+    });
+    return {
+      el: el, resize: resize,
+      draw: function () {
+        var obj = mode === "trophy" ? trophy : ball;
+        if (!calm) { rotY += 0.006 + boost; boost *= 0.95; sparks.rotation.y += 0.0015; if (mode === "ball") { obj.rotation.x = 0.35; } }
+        obj.rotation.y = rotY;
+        if (!calm || dirty) { renderer.render(scene, cam); dirty = false; }
+      }
+    };
+  }
+  function loop() {
+    if (!stage || !stage.el.isConnected) { running = false; return; }
+    if (!document.hidden) { stage.draw(); }
+    requestAnimationFrame(loop);
+  }
+  function mountStage() {
+    var tab = G(function () { return currentTab; }, ""), isLoaded = G(function () { return loaded; }, false), hall = G(function () { return hallMode; }, false);
+    var want = isLoaded && !hall && (tab === "Home" || tab === "Awards") && !stageFailed;
+    if (!want) { if (stage && stage.el.parentNode) { stage.el.remove(); } return; }
+    if (!stage) {
+      if (stageLoading) { return; }
+      stageLoading = true;
+      loadThree(function (ok) {
+        stageLoading = false;
+        if (!ok) { stageFailed = true; return; }
+        try { stage = buildStage(window.THREE); } catch (e) { stageFailed = true; return; }
+        mountStage();
+      });
+      return;
+    }
+    if (!app.contains(stage.el)) {
+      var anchor = tab === "Home" ? app.querySelector(".homefeat") : app.querySelector(".ptitle");
+      if (anchor) { anchor.parentNode.insertBefore(stage.el, anchor.nextSibling); } else { app.insertBefore(stage.el, app.firstChild); }
+      stage.el.querySelector(".fxs-top b").textContent = G(function () { return fullName(currentSeason); }, "eFootball Friends League");
+      stage.resize(); dirty = true;
+    }
+    if (!running) { running = true; requestAnimationFrame(loop); }
+  }
+
+  // ------------------------------------------------------------------
+  // WIRING: run after every page render
+  // ------------------------------------------------------------------
+  var lastKey = "", obs = null;
+  function pageKey() {
+    return G(function () { return currentTab + "|" + currentSeason + "|" + (currentTab === "Fixtures" ? currentRound : "") + "|" + (app.querySelector(".card.thead") ? currentTeam : ""); }, "");
+  }
+  function enhance() {
+    if (obs) { obs.disconnect(); }
+    try {
+      var key = pageKey(), same = key === lastKey, first = lastKey === "";
+      app.classList.toggle("fx-same", same);
+      // 4. depth transition fallback for browsers without the View Transitions API
+      if (!same && !first && !document.startViewTransition && !calm) {
+        app.classList.remove("fx-pg"); void app.offsetWidth; app.classList.add("fx-pg");
+        setTimeout(function () { app.classList.remove("fx-pg"); }, 700);
+      }
+      lastKey = key;
+      markTilt(app);
+      mountPitch();
+      mountStage();
+      // 7. table order animation
+      var now = readTable();
+      animateTable(tableSnap, now);
+      tableSnap = now;
+      checkGoals();
+    } catch (e) { /* never break the site */ }
+    if (obs) { obs.observe(app, { childList: true }); }
+  }
+  obs = new MutationObserver(enhance);
+  obs.observe(app, { childList: true });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && stage && !running && stage.el.isConnected) { running = true; requestAnimationFrame(loop); } });
+})();
+</script>
 
 <script>
   // =============== CONNECTION ===============
@@ -1099,6 +1658,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
     const done = rows.every(function (r) { return r.played === SCHEDULE.length; });
     let html = "";
     if (done) { html += "<div class='shield'>🛡️ League Shield winners: " + rows[0].name + "</div>"; }
+    html += (typeof fxPodium === "function" ? fxPodium(rows) : "");
     html += overviewStrip();
     html += "<button class='btn out mfull' onclick='toggleFull(this)'>⇄ Full stats</button><div class='card scroll'><table class='st'><tr><th>#</th><th class='left'>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th></tr>";
     rows.forEach(function (r, i) {
@@ -2842,10 +3402,11 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     closeOverlay(true);
     const o = document.createElement("div");
     o.className = "ovl"; o.id = "ovl";
-    o.innerHTML = "<div class='ovp' style='text-align:center'><button class='ovx' onclick='closeOverlay()'>✕</button><div style='max-width:210px;margin:6px auto 14px'>" + cardFace(x, -1) + "</div>" +
+    o.innerHTML = "<div class='ovp' style='text-align:center'><button class='ovx' onclick='closeOverlay()'>✕</button><div class='fx-flip' onclick=\"this.classList.toggle('flipped')\"><div class='fx-flip-in'><div class='fx-face'>" + cardFace(x, -1) + "</div>" +
+        "<div class='fx-face fx-back'><b class='fx-bt'>" + esc(x.name) + "</b><small>" + esc(teams[x.team]) + " · OVR " + x.ovr + "</small>" + lines.map(function (l) { return "<div>" + esc(l) + "</div>"; }).join("") + "</div></div></div>" +
+      "<p class='legend fx-hint'>Tap the card to flip it</p>" +
       (x.joined ? "<p><b>" + (isNewSigning(x.joined) ? "New player this season" : "Signed from " + esc(teams[x.joined.from_team] || "?")) + "</b></p>" : "") +
-      "<div class='legend' style='text-align:left'>" + lines.map(function (l) { return "<div>" + esc(l) + "</div>"; }).join("") + "</div>" +
-      "<p><button class='btn out' onclick=\"closeOverlay();openTeam('" + x.team + "')\">" + esc(teams[x.team]) + " profile</button></p></div>";
+            "<p><button class='btn out' onclick=\"closeOverlay();openTeam('" + x.team + "')\">" + esc(teams[x.team]) + " profile</button></p></div>";
     o.addEventListener("click", function (e) { if (e.target === o) { closeOverlay(); } });
     document.body.appendChild(o);
   }
