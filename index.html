@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fzygrjvkjwfpjzmkauan.supabase.co" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&family=League+Gothic&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&family=League+Gothic&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <!-- Supabase library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -659,6 +659,49 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
 .trophy.s4 { border-color:var(--gold); background:linear-gradient(160deg,#2a2208,#15151a); }
 .brand-title { font-size:clamp(46px,9vw,92px) !important; }
 @media (max-width:700px) { .brand-title { font-size:clamp(40px,12vw,60px) !important; } }
+
+/* ---------- player cards ---------- */
+.pc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
+.pcard { position:relative; border-radius:14px 14px 42px 42px / 14px 14px 30px 30px; padding:12px 12px 16px; color:#1a1204; cursor:pointer; overflow:hidden; box-shadow:0 10px 22px rgba(0,0,0,.25); transition:transform .2s, box-shadow .2s; text-align:center; }
+.pcard:hover { transform:translateY(-5px) rotate(-1deg); box-shadow:0 16px 30px rgba(0,0,0,.35); }
+.pcard::after { content:""; position:absolute; inset:0; background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%); transform:translateX(-120%); pointer-events:none; }
+.pcard:hover::after { transform:translateX(120%); transition:transform .7s; }
+.pcard.bronze { background:linear-gradient(160deg,#edc59a,#b07a44 60%,#7c4c23); }
+.pcard.silver { background:linear-gradient(160deg,#f6f8fb,#aeb8c6 60%,#7f8a98); }
+.pcard.gold { background:linear-gradient(160deg,#fff2b0,#e3b422 60%,#a87c06); }
+.pcard.elite { background:linear-gradient(160deg,#a6f3ff,#7a6bff 45%,#ff6bd6 80%,#ffd45c); color:#10002e; }
+.pcard .ptop { display:flex; justify-content:space-between; align-items:flex-start; text-align:left; }
+.pcard .ovr { font:400 42px/0.95 var(--font-head); }
+.pcard .ppos { font:700 12px var(--font-body); letter-spacing:1px; opacity:.75; }
+.pcard .pbdg { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.18); font:700 11px var(--font-head); }
+.pcard .pic { font-size:44px; line-height:1.1; margin:4px 0 2px; }
+.pcard .pnm { font:400 21px/1.05 var(--font-head); text-transform:uppercase; border-top:1px solid rgba(0,0,0,.25); border-bottom:1px solid rgba(0,0,0,.25); padding:5px 0; margin:6px 0; word-break:break-word; }
+.pcard .pst { display:grid; grid-template-columns:1fr 1fr; gap:2px 6px; font-size:11px; text-align:left; }
+.pcard .pst b { font-size:14px; }
+.pcard .ptm { font-size:11px; font-weight:700; margin-top:6px; opacity:.8; }
+.pcard .prib { position:absolute; top:46px; right:8px; display:flex; flex-direction:column; gap:2px; font-style:normal; }
+.pcard .prib i { font-style:normal; font-size:15px; }
+.pcard.base { background:linear-gradient(160deg,#ffffff,#e6ebf7 70%,#cfd8ee); color:#0a1030; border:2px solid #b9c5e6; }
+.pcard.boot { background:linear-gradient(160deg,#ffd0d0,#e23b3b 55%,#8f0f1f); color:#fff; }
+.pcard.glove { background:linear-gradient(160deg,#c6fff0,#18b394 55%,#0a6b66); color:#04221f; }
+.pcard.star { background:linear-gradient(160deg,#f0d6ff,#9b4dff 55%,#4b1aa3); color:#fff; }
+.pcard .pedi { position:absolute; left:0; right:0; bottom:0; padding:3px 0; background:rgba(0,0,0,.35); color:#fff; font:700 9px var(--font-body); letter-spacing:1.5px; }
+/* ---------- season wrapped ---------- */
+.wr { position:fixed; inset:0; z-index:400; display:flex; flex-direction:column; font-family:var(--font-body); user-select:none; -webkit-user-select:none; animation:fadeIn .25s ease both; }
+.wr .wbars { display:flex; gap:4px; padding:calc(14px + env(safe-area-inset-top,0px)) 14px 0; }
+.wr .wbars i { flex:1; height:3px; background:rgba(255,255,255,.3); border-radius:2px; overflow:hidden; }
+.wr .wbars i b { display:block; height:100%; width:0; background:currentColor; }
+.wr .wbars i.done b, .wr .wbars i.on b { width:100%; }
+.wr .wbars i.on b { animation:wrBar .6s ease both; }
+@keyframes wrBar { from { width:0; } to { width:100%; } }
+.wr .wx { position:absolute; top:calc(26px + env(safe-area-inset-top,0px)); right:14px; z-index:2; background:rgba(0,0,0,.25); color:inherit; border:0; width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer; }
+.wr .wslide { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:30px 26px 50px; animation:wrIn .55s cubic-bezier(.2,.9,.3,1.1) both; }
+.wr .wk { letter-spacing:3px; text-transform:uppercase; font-size:13px; font-weight:700; opacity:.85; margin-bottom:10px; }
+.wr .wbig { font:400 clamp(72px,24vw,170px)/0.95 var(--font-head); margin:6px 0 14px; }
+.wr .wsub { font-size:19px; line-height:1.5; max-width:430px; }
+.wr .wsub small { opacity:.7; }
+.wr .wrbtn { margin-top:16px; background:#fff; color:#111; border:0; border-radius:999px; padding:10px 20px; font:700 14px var(--font-body); cursor:pointer; }
+@keyframes wrIn { from { opacity:0; transform:translateY(26px) scale(.96); } to { opacity:1; transform:none; } }
 </style>
 </head>
 <body>
@@ -700,7 +743,7 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
   let squads = {};           // filled from the database
   let isAdmin = false;
 
-  const tabs = ["Standings", "News", "Race", "Fixtures", "Playoffs", "Awards", "Squads", "Records", "Golden Boot", "Golden Glove", "Player Stats", "Player of Season", "Rules", "Admin"];
+  const tabs = ["Standings", "News", "Race", "Fixtures", "Playoffs", "Awards", "Squads", "Records", "Golden Boot", "Golden Glove", "Player Stats", "Player Cards", "Player of Season", "Wrapped", "Rules", "Admin"];
   let currentTab = "Home";
   let currentRound = 0;
   let currentTeam = "T1";
@@ -1946,6 +1989,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
               (bd ? "<b>" + b.h + " - " + b.a + "</b>" : "vs") + " " + esc(teams[found.home]) + (bd ? "" : " <span class='legend'>(not played yet)</span>") + "</div>";
     }
 
+    if (done) { html += punditBox(id); }
     // scorers: goals logged on the Golden Boot tab for this round
     const sc = goalLog.filter(function (g) { return Number(g.round) === found.ri + 1 && (g.team === found.home || g.team === found.away); });
     html += "<div class='msec'><h4>Scorers</h4>";
@@ -2259,7 +2303,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
   function pageNews() {
     return "<div class='po'>" + buildNews().map(function (n) {
       return "<div class='pocard' style='border-left-color:var(--gold)'><b style='font-size:18px'>" + n.icon + " " + esc(n.title) + "</b><div class='legend' style='margin-top:6px'>" + esc(n.text) + "</div></div>";
-    }).join("") + "</div><p class='legend'>News is generated automatically from results, playoffs and goals.</p>";
+    }).join("") + "</div><p class='legend'>News is generated automatically from results, playoffs and goals.</p>" + punditNewsHtml();
   }
 
   function qualStatus() {
@@ -2525,6 +2569,407 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     return html;
   }
 
+  // =====================================================================
+  //  SHARED HELPERS: played matches in order, table after N rounds
+  // =====================================================================
+  var newsRound = -1, cardTeam = "all", cardSort = "ovr", lastCards = [], wrState = null;
+
+  function nth(n) { const v = n % 100, s = ["th", "st", "nd", "rd"]; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+  function hashStr(s) { let h = 7; for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return h; }
+  function pickOne(arr, seed) { return arr[seed % arr.length]; }
+
+  function chronoMatches() {
+    const out = [];
+    buildFixtures().forEach(function (rd, ri) {
+      rd.forEach(function (m) {
+        const r = results[m.id];
+        if (isPlayed(r)) { out.push({ id: m.id, ri: ri, home: m.home, away: m.away, hg: Number(r.h), ag: Number(r.a) }); }
+      });
+    });
+    return out;
+  }
+  function tableUpTo(n) {
+    const rows = {};
+    Object.keys(teams).forEach(function (c) { rows[c] = { code: c, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, form: [] }; });
+    chronoMatches().filter(function (m) { return m.ri < n; }).forEach(function (m) {
+      const h = rows[m.home], a = rows[m.away];
+      h.p++; a.p++; h.gf += m.hg; h.ga += m.ag; a.gf += m.ag; a.ga += m.hg;
+      if (m.hg > m.ag) { h.w++; a.l++; h.pts += 3; h.form.push("W"); a.form.push("L"); }
+      else if (m.hg < m.ag) { a.w++; h.l++; a.pts += 3; a.form.push("W"); h.form.push("L"); }
+      else { h.d++; a.d++; h.pts++; a.pts++; h.form.push("D"); a.form.push("D"); }
+    });
+    return Object.keys(rows).map(function (c) { return rows[c]; }).sort(function (x, y) {
+      return y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf || teams[x.code].localeCompare(teams[y.code]);
+    });
+  }
+  function posMap(tbl) { const o = {}; tbl.forEach(function (r, i) { o[r.code] = i + 1; }); return o; }
+
+  // =====================================================================
+  //  1. PUNDIT COMMENTARY
+  // =====================================================================
+  function punditReport(id) {
+    const m = chronoMatches().find(function (x) { return x.id === id; });
+    if (!m) { return null; }
+    const seed = hashStr(id + "|" + currentSeason);
+    const pre = tableUpTo(m.ri), post = tableUpTo(m.ri + 1), pp = posMap(pre), qp = posMap(post);
+    function row(c) { return pre.find(function (r) { return r.code === c; }); }
+    const H = teams[m.home], A = teams[m.away], tot = m.hg + m.ag, diff = Math.abs(m.hg - m.ag);
+    let w = null, l = null;
+    if (m.hg > m.ag) { w = m.home; l = m.away; } else if (m.ag > m.hg) { w = m.away; l = m.home; }
+    const W = w ? teams[w] : "", L = l ? teams[l] : "";
+    const wg = Math.max(m.hg, m.ag), lg = Math.min(m.hg, m.ag), score = wg + "-" + lg;
+    const lines = [];
+
+    // 1) the headline
+    if (!w) {
+      if (tot === 0) { lines.push(pickOne([H + " and " + A + " cancelled each other out in a goalless stalemate.", "Nothing to separate " + H + " and " + A + " as the match ended 0-0.", "A cagey goalless draw: both defences on top, both attacks quiet."], seed)); }
+      else if (tot >= 4) { lines.push(pickOne(["What a game! " + H + " and " + A + " shared " + tot + " goals in a " + m.hg + "-" + m.ag + " thriller.", "End to end stuff: " + H + " " + m.hg + "-" + m.ag + " " + A + ", and the points are shared.", "Pure entertainment as " + H + " and " + A + " trade blows and settle for a draw."], seed)); }
+      else { lines.push(pickOne(["Honours even: " + H + " " + m.hg + "-" + m.ag + " " + A + ".", H + " and " + A + " share the spoils in a " + m.hg + "-" + m.ag + " draw.", "A fair result, with " + H + " and " + A + " taking a point each."], seed)); }
+    } else {
+      const away = w === m.away, gap = m.ri > 0 ? pp[w] - pp[l] : 0;
+      if (gap >= 4) { lines.push(pickOne(["SHOCK! " + W + " (" + nth(pp[w]) + ") stun " + L + " (" + nth(pp[l]) + ") with a " + score + " win.", "A huge upset: " + W + " climb out of the pack to beat " + L + " " + score + ".", "Nobody saw that coming. " + W + " topple " + L + " " + score + "."], seed)); }
+      else if (diff >= 4) { lines.push(pickOne([W + " destroy " + L + " " + score + ". An absolute masterclass.", "A rout! " + W + " run riot with a " + score + " win over " + L + ".", L + " were simply blown away as " + W + " won " + score + "."], seed)); }
+      else if (diff === 3) { lines.push(pickOne([W + " were ruthless in a " + score + " win over " + L + ".", "Total control from " + W + ", who beat " + L + " " + score + ".", W + " put " + L + " to the sword, " + score + "."], seed)); }
+      else if (diff === 2) { lines.push(pickOne([W + " are good value for a " + score + " win against " + L + ".", "A solid " + score + " for " + W + (away ? " away from home" : "") + " against " + L + ".", W + " get the job done, beating " + L + " " + score + "."], seed)); }
+      else if (tot >= 5) { lines.push(pickOne([W + " edge a " + tot + "-goal thriller, " + score + " against " + L + ".", "A wild one! " + W + " just about survive, winning " + score + " over " + L + "."], seed)); }
+      else { lines.push(pickOne([W + " scrape past " + L + " " + score + " in a tight one.", "Fine margins decide it: " + W + " " + score + " " + L + ".", W + " take all three points " + (away ? "on the road " : "") + "with a narrow " + score + " win."], seed)); }
+    }
+
+    // 2) one detail: leader beaten, big clash, scorers, clean sheet or a streak
+    const wr = w ? row(w) : null, lr = l ? row(l) : null;
+    const sc = goalLog.filter(function (g) { return Number(g.round) === m.ri + 1 && (g.team === m.home || g.team === m.away); });
+    const agg = {};
+    sc.forEach(function (g) { const k = g.team + "|" + g.player; agg[k] = agg[k] || { team: g.team, player: g.player, goals: 0 }; agg[k].goals += g.goals; });
+    const top = Object.keys(agg).map(function (k) { return agg[k]; }).sort(function (a, b) { return b.goals - a.goals; })[0];
+    const detail = [];
+    if (w && m.ri > 0 && pp[l] === 1) { detail.push("The league leaders have been beaten, and the title race just got interesting."); }
+    if (m.ri > 0 && pp[m.home] <= 3 && pp[m.away] <= 3) { detail.push("A big clash between two top-three sides."); }
+    if (top && top.goals >= 3) { detail.push(top.player + " grabbed a hat-trick for " + teams[top.team] + ". Remember the name!"); }
+    else if (top && top.goals === 2) { detail.push(top.player + " bagged a brace for " + teams[top.team] + "."); }
+    if (w && lg === 0) {
+      const k = gkLog.find(function (g) { return g.match_ref === id && g.team === w; });
+      detail.push(k ? k.player + " kept a clean sheet for " + W + (k.saves ? " with " + k.saves + " save" + (k.saves === 1 ? "" : "s") + "." : ".") : W + " kept a clean sheet.");
+    }
+    if (w) {
+      const ws = endRun(wr.form, function (f) { return f === "W"; }) + 1, ls = endRun(lr.form, function (f) { return f === "L"; }) + 1;
+      if (ws >= 3) { detail.push("That makes it " + ws + " wins in a row for " + W + "."); }
+      if (ls >= 3) { detail.push(L + " have now lost " + ls + " on the bounce. The pressure is building."); }
+    } else {
+      [m.home, m.away].forEach(function (c) { const u = endRun(row(c).form, function (f) { return f !== "L"; }) + 1; if (u >= 4) { detail.push(teams[c] + " stay unbeaten, now " + u + " games without defeat."); } });
+    }
+    if (detail.length) { lines.push(detail[seed % detail.length]); }
+
+    // 3) table effect
+    if (w) {
+      if (qp[w] === 1 && pp[w] !== 1 && m.ri > 0) { lines.push(W + " go top of the table."); }
+      else if (qp[w] < pp[w] && m.ri > 0) { lines.push(W + " climb from " + nth(pp[w]) + " to " + nth(qp[w]) + "."); }
+      else if (qp[l] > pp[l] && m.ri > 0) { lines.push(L + " slip down to " + nth(qp[l]) + "."); }
+    }
+    return { match: m, text: lines.join(" ") };
+  }
+
+  function punditBox(id) {
+    const r = punditReport(id);
+    return r ? "<div class='msec'><h4>🎙️ Pundit says</h4><div>" + esc(r.text) + "</div></div>" : "";
+  }
+
+  function punditNewsHtml() {
+    const ms = chronoMatches();
+    if (!ms.length) { return ""; }
+    const rounds = []; ms.forEach(function (m) { if (rounds.indexOf(m.ri) === -1) { rounds.push(m.ri); } });
+    const sel = rounds.indexOf(newsRound) === -1 ? rounds[rounds.length - 1] : newsRound;
+    let html = "<div class='card' style='margin-top:16px'><h3>🎙️ Pundit match reports <span class='legend'>written automatically</span></h3>" +
+      "<select onchange='newsRound=Number(this.value);render()'>" + rounds.map(function (ri) { return "<option value='" + ri + "'" + (ri === sel ? " selected" : "") + ">Round " + (ri + 1) + "</option>"; }).join("") + "</select>";
+    ms.filter(function (m) { return m.ri === sel; }).forEach(function (m) {
+      const r = punditReport(m.id);
+      html += "<div class='tm' style='display:block;cursor:pointer' onclick=\"openMatch('" + m.id + "')\"><b>" + esc(teams[m.home]) + " " + m.hg + " - " + m.ag + " " + esc(teams[m.away]) + "</b><div class='legend' style='margin-top:4px'>" + esc(r.text) + "</div></div>";
+    });
+    return html + "</div>";
+  }
+
+  // =====================================================================
+  //  2. UPSET AND DRAMA AWARDS
+  // =====================================================================
+  function dramaList() {
+    const ms = chronoMatches();
+    if (ms.length < 5) { return []; }
+    const nR = Math.max.apply(null, ms.map(function (m) { return m.ri; })) + 1, cache = {};
+    function pos(n) { return cache[n] || (cache[n] = posMap(tableUpTo(n))); }
+    let upset = null, thrash = null, thriller = null;
+    const kill = {}, oneGoal = {}, draws = {}, out = [];
+    ms.forEach(function (m) {
+      const diff = Math.abs(m.hg - m.ag), tot = m.hg + m.ag, p = pos(m.ri);
+      if (!thriller || tot > thriller.tot || (tot === thriller.tot && diff < thriller.diff)) { thriller = { m: m, tot: tot, diff: diff }; }
+      if (m.hg === m.ag) { draws[m.home] = (draws[m.home] || 0) + 1; draws[m.away] = (draws[m.away] || 0) + 1; return; }
+      const w = m.hg > m.ag ? m.home : m.away, l = w === m.home ? m.away : m.home;
+      if (!thrash || diff > thrash.diff || (diff === thrash.diff && tot > thrash.tot)) { thrash = { m: m, diff: diff, tot: tot }; }
+      if (diff === 1) { oneGoal[l] = (oneGoal[l] || 0) + 1; }
+      if (m.ri > 0) {
+        const gap = p[w] - p[l];
+        if (gap >= 3 && (!upset || gap > upset.gap || (gap === upset.gap && diff > upset.diff))) { upset = { m: m, w: w, l: l, gap: gap, diff: diff, pw: p[w], pl: p[l] }; }
+        if (p[l] <= 3 && p[w] > 3) { kill[w] = (kill[w] || 0) + 1; }
+      }
+    });
+    function maxOf(map, min) {
+      let best = 0, codes = [];
+      Object.keys(map).forEach(function (c) { if (map[c] > best) { best = map[c]; codes = [c]; } else if (map[c] === best) { codes.push(c); } });
+      return best >= min ? { n: best, codes: codes } : null;
+    }
+    function names(codes) { return codes.map(function (c) { return teams[c]; }).join(" & "); }
+    function sc(m) { return teams[m.home] + " " + m.hg + "-" + m.ag + " " + teams[m.away]; }
+    if (upset) { out.push({ icon: "😱", title: "Biggest Upset", main: teams[upset.w], code: upset.w, detail: "Beat " + teams[upset.l] + " " + Math.max(upset.m.hg, upset.m.ag) + "-" + Math.min(upset.m.hg, upset.m.ag) + " in round " + (upset.m.ri + 1) + " (" + nth(upset.pw) + " beat " + nth(upset.pl) + ")" }); }
+    const gk = maxOf(kill, 1);
+    if (gk) { out.push({ icon: "🗡️", title: "Giant Killers", main: names(gk.codes), code: gk.codes[0], detail: gk.n + " win" + (gk.n === 1 ? "" : "s") + " over top-three sides from outside the top three" }); }
+    if (thriller && thriller.tot >= 4) { out.push({ icon: "🎢", title: "Thriller of the Season", main: sc(thriller.m), detail: thriller.tot + " goals in round " + (thriller.m.ri + 1) }); }
+    if (thrash && thrash.diff >= 3) { out.push({ icon: "💥", title: "Biggest Thrashing", main: sc(thrash.m), detail: "Won by " + thrash.diff + " goals in round " + (thrash.m.ri + 1) }); }
+    const hl = maxOf(oneGoal, 2);
+    if (hl) { out.push({ icon: "💔", title: "Hard Luck Club", main: names(hl.codes), code: hl.codes[0], detail: hl.n + " defeats by a single goal" }); }
+    const dk = maxOf(draws, 3);
+    if (dk) { out.push({ icon: "🤝", title: "Draw Kings", main: names(dk.codes), code: dk.codes[0], detail: dk.n + " draws" }); }
+    let changes = 0, prev = null;
+    for (let n = 1; n <= nR; n++) { const lead = tableUpTo(n)[0].code; if (prev && lead !== prev) { changes++; } prev = lead; }
+    if (changes >= 2) { out.push({ icon: "🔄", title: "Title Race Drama", main: changes + " lead changes", detail: "Top spot changed hands " + changes + " times after " + nR + " rounds" }); }
+    if (nR >= 4) {
+      const mid = Math.floor(nR / 2), pm = pos(mid), pn = pos(nR);
+      let up = null, down = null;
+      Object.keys(teams).forEach(function (c) {
+        const d = pm[c] - pn[c];
+        if (d >= 2 && (!up || d > up.d)) { up = { c: c, d: d }; }
+        if (d <= -2 && (!down || d < down.d)) { down = { c: c, d: d }; }
+      });
+      if (up) { out.push({ icon: "🚀", title: "Biggest Climber", main: teams[up.c], code: up.c, detail: "Up " + up.d + " places since round " + mid + " (" + nth(pm[up.c]) + " to " + nth(pn[up.c]) + ")" }); }
+      if (down) { out.push({ icon: "🪂", title: "Biggest Faller", main: teams[down.c], code: down.c, detail: "Down " + (-down.d) + " places since round " + mid + " (" + nth(pm[down.c]) + " to " + nth(pn[down.c]) + ")" }); }
+    }
+    return out;
+  }
+
+  function dramaHtml() {
+    const list = dramaList();
+    if (!list.length) { return ""; }
+    return "<h3 style='margin:22px 0 10px'>🎭 Upsets &amp; Drama</h3><div class='po'>" + list.map(function (x) {
+      return "<div class='pocard' style='border-left-color:var(--red)'><small>" + x.icon + " " + esc(x.title) + "</small><div style='display:flex;align-items:center;gap:10px'>" +
+        (x.code ? "<span class='badge big'>" + esc(initials(teams[x.code])) + "</span>" : "") + "<div><b style='font-size:18px'>" + esc(x.main) + "</b><div class='legend'>" + esc(x.detail) + "</div></div></div></div>";
+    }).join("") + "</div><p class='legend'>Drama awards are worked out from the table position of each team before every match.</p>";
+  }
+
+  // =====================================================================
+  //  3. PLAYER CARDS
+  // =====================================================================
+  // Masters League uses plain base cards; Mini League uses every kind (tiers + special editions)
+  function cardMode() { return SEASONS[currentSeason].league === "mini" ? "all" : "base"; }
+
+  function playerCards() {
+    const codes = Object.keys(teams), rows = buildStandings(), byCode = {};
+    rows.forEach(function (r) { byCode[r.code] = r; });
+    const gkRows = gkAgg([currentSeason]), potw = potwAll(), trs = transfersOn() ? seasonTransfers() : [], cards = [];
+    codes.forEach(function (c) {
+      const tr = byCode[c], ppg = tr && tr.played ? tr.points / tr.played : 1.3;
+      playerList((squads[c] || { players: "" }).players).forEach(function (raw) {
+        const name = cleanPlayer(raw), n = normName(raw);
+        if (!n) { return; }
+        const mine = goalLog.filter(function (g) { return g.team === c && sameName(normName(g.player), n); });
+        let goals = 0; const per = {};
+        mine.forEach(function (g) { goals += g.goals; const k = g.round ? "R" + g.round : g.stage ? "S" + g.stage : "#" + g.id; per[k] = (per[k] || 0) + g.goals; });
+        const hat = Object.keys(per).filter(function (k) { return per[k] >= 3; }).length;
+        const gk = gkRows.find(function (r) { return r.team === teams[c] && sameName(normName(r.player), n); });
+        const isGK = /\bGK\b|goalkeeper/i.test(raw) || !!gk;
+        const pw = potw.filter(function (w) { return w.team === c && sameName(normName(w.player), n); }).length;
+        const t = trs.find(function (x) { return x.to_team === c && sameName(normName(x.player), n); });
+        let ovr;
+        if (isGK) {
+          const x = gk || { m: 0, cs: 0, saves: 0, ga: 0 }, gpm = x.m ? x.ga / x.m : 1.2;
+          ovr = 62 + x.cs * 2.5 + x.saves * 0.35 + pw * 3 + (ppg - 1.3) * 5 - (gpm - 1.2) * 4;
+        } else { ovr = 60 + goals * 2.4 + hat * 4 + pw * 3 + (ppg - 1.3) * 5; }
+        ovr = Math.max(50, Math.min(99, Math.round(ovr)));
+        cards.push({ key: c + "|" + n, team: c, name: name, isGK: isGK, ovr: ovr, goals: goals, hat: hat, potw: pw, gk: gk || null, tp: tr ? tr.points : 0, joined: t || null,
+                     tier: cardMode() === "base" ? "base" : ovr >= 85 ? "elite" : ovr >= 75 ? "gold" : ovr >= 65 ? "silver" : "bronze" });
+      });
+    });
+    const topG = cards.reduce(function (m, x) { return Math.max(m, x.goals); }, 0);
+    const topCs = cards.reduce(function (m, x) { return Math.max(m, x.gk ? x.gk.cs : 0); }, 0);
+    cards.forEach(function (x) {
+      x.boot = topG > 0 && x.goals === topG; x.glove = topCs > 0 && !!x.gk && x.gk.cs === topCs;
+      // special editions exist in the Mini League only
+      x.special = cardMode() === "all" ? (x.boot ? "boot" : x.glove ? "glove" : x.potw > 0 ? "star" : "") : "";
+    });
+    return cards;
+  }
+
+  function cardFace(x, i) {
+    const stats = x.isGK
+      ? [[x.gk ? x.gk.cs : 0, "CS"], [x.gk ? x.gk.saves : 0, "SV"], [x.gk && x.gk.m ? (x.gk.ga / x.gk.m).toFixed(1) : "-", "GA/M"], [x.potw, "POTW"]]
+      : [[x.goals, "GLS"], [x.hat, "HAT"], [x.potw, "POTW"], [x.tp, "TEAM PTS"]];
+    return "<div class='pcard " + (x.special || x.tier) + "' onclick='openCard(" + i + ")'>" + (x.special ? "<div class='pedi'>" + ({ boot: "GOLDEN BOOT", glove: "GOLDEN GLOVE", star: "PLAYER OF THE WEEK" })[x.special] + "</div>" : "") +
+      "<div class='ptop'><div><div class='ovr'>" + x.ovr + "</div><div class='ppos'>" + (x.isGK ? "GK" : "PLR") + "</div></div><span class='pbdg'>" + esc(initials(teams[x.team])) + "</span></div>" +
+      "<div class='pic'>" + (x.isGK ? "🧤" : "⚽") + "</div><div class='pnm'>" + esc(x.name) + "</div>" +
+      "<div class='pst'>" + stats.map(function (s) { return "<span><b>" + s[0] + "</b> " + s[1] + "</span>"; }).join("") + "</div>" +
+      "<div class='ptm'>" + esc(teams[x.team]) + "</div>" +
+      "<div class='prib'>" + (x.boot ? "<i title='Golden Boot leader'>👟</i>" : "") + (x.glove ? "<i title='Golden Glove leader'>🧤</i>" : "") + (x.joined ? "<i title='Joined this season'>" + (isNewSigning(x.joined) ? "🆕" : "🔁") + "</i>" : "") + "</div></div>";
+  }
+
+  function pageCards() {
+    let cards = playerCards();
+    if (!cards.length) { return "<div class='card'><p class='legend'>Cards appear once squads are added for this season.</p></div>"; }
+    const all = cardMode() === "all", counts = { elite: 0, gold: 0, silver: 0, bronze: 0, special: 0, base: 0 };
+    cards.forEach(function (x) { if (x.special) { counts.special++; } if (counts[x.tier] !== undefined) { counts[x.tier]++; } });
+    cards = cards.filter(function (x) { return cardTeam === "all" || x.team === cardTeam; });
+    cards.sort(function (a, b) {
+      if (cardSort === "goals") { return b.goals - a.goals || b.ovr - a.ovr || a.name.localeCompare(b.name); }
+      if (cardSort === "name") { return a.name.localeCompare(b.name); }
+      return b.ovr - a.ovr || b.goals - a.goals || a.name.localeCompare(b.name);
+    });
+    lastCards = cards;
+    let html = "<p class='legend'><b>" + (all ? "Mini League cards: every kind of card." : "Masters League cards: base cards.") + "</b> " + (all ? "Bronze, silver, gold and elite tiers, plus special editions for the Golden Boot leader, Golden Glove leader and Players of the Week. " : "One standard card for every player, with no tiers or special editions. ") + "Every player gets a card. Ratings come from real goals, hat-tricks, clean sheets, saves, Player of the Week awards and team results, so they change after every round. Tap a card for the breakdown.</p>" +
+      "<div class='row' style='display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0'><select onchange=\"cardTeam=this.value;render()\"><option value='all'>All teams</option>" +
+      Object.keys(teams).map(function (c) { return "<option value='" + c + "'" + (c === cardTeam ? " selected" : "") + ">" + esc(teams[c]) + "</option>"; }).join("") + "</select>" +
+      "<select onchange=\"cardSort=this.value;render()\"><option value='ovr'" + (cardSort === "ovr" ? " selected" : "") + ">Sort: rating</option><option value='goals'" + (cardSort === "goals" ? " selected" : "") + ">Sort: goals</option><option value='name'" + (cardSort === "name" ? " selected" : "") + ">Sort: name</option></select>" +
+      "<span class='legend'>" + (all ? "✨ " + counts.elite + " elite · 🥇 " + counts.gold + " gold · 🥈 " + counts.silver + " silver · 🥉 " + counts.bronze + " bronze · 🌟 " + counts.special + " special" : counts.base + " base cards") + "</span></div>" +
+      "<div class='pc-grid'>" + cards.map(cardFace).join("") + "</div>";
+    return html;
+  }
+
+  function openCard(i) {
+    const x = lastCards[i];
+    if (!x) { return; }
+    const lines = [];
+    if (x.isGK) {
+      const g = x.gk || { m: 0, cs: 0, saves: 0, ga: 0 };
+      lines.push("Base 62", "Clean sheets: " + g.cs + " (+" + (g.cs * 2.5).toFixed(1) + ")", "Saves: " + g.saves + " (+" + (g.saves * 0.35).toFixed(1) + ")", "Player of the Week: " + x.potw + " (+" + (x.potw * 3) + ")", "Goals conceded per match: " + (g.m ? (g.ga / g.m).toFixed(2) : "n/a"));
+    } else {
+      lines.push("Base 60", "Goals: " + x.goals + " (+" + (x.goals * 2.4).toFixed(1) + ")", "Hat-tricks: " + x.hat + " (+" + (x.hat * 4) + ")", "Player of the Week: " + x.potw + " (+" + (x.potw * 3) + ")");
+    }
+    lines.push("Plus a small bonus or penalty for how well " + teams[x.team] + " are doing.");
+    closeOverlay(true);
+    const o = document.createElement("div");
+    o.className = "ovl"; o.id = "ovl";
+    o.innerHTML = "<div class='ovp' style='text-align:center'><button class='ovx' onclick='closeOverlay()'>✕</button><div style='max-width:210px;margin:6px auto 14px'>" + cardFace(x, -1) + "</div>" +
+      (x.joined ? "<p><b>" + (isNewSigning(x.joined) ? "New player this season" : "Signed from " + esc(teams[x.joined.from_team] || "?")) + "</b></p>" : "") +
+      "<div class='legend' style='text-align:left'>" + lines.map(function (l) { return "<div>" + esc(l) + "</div>"; }).join("") + "</div>" +
+      "<p><button class='btn out' onclick=\"closeOverlay();openTeam('" + x.team + "')\">" + esc(teams[x.team]) + " profile</button></p></div>";
+    o.addEventListener("click", function (e) { if (e.target === o) { closeOverlay(); } });
+    document.body.appendChild(o);
+  }
+
+  // =====================================================================
+  //  4. SEASON WRAPPED
+  // =====================================================================
+  const WR_BG = ["linear-gradient(160deg,#1b1464,#6a11cb)", "linear-gradient(160deg,#0f2027,#2c5364)", "linear-gradient(160deg,#42275a,#734b6d)", "linear-gradient(160deg,#134e5e,#71b280)", "linear-gradient(160deg,#42275a,#b24592)", "linear-gradient(160deg,#16222a,#3a6073)", "linear-gradient(160deg,#4b134f,#c94b4b)"];
+
+  function teamWrappedSlides(code) {
+    const rows = buildStandings(), pos = rows.findIndex(function (r) { return r.code === code; }), r = rows[pos];
+    const tm = teamMatches(code).filter(function (x) { return x.played; });
+    if (!tm.length) { return null; }
+    const sum = seasonSummary(currentSeason), name = teams[code], sq = squads[code] || { owner: "" }, gd = r.gf - r.ga;
+    const club = CLUBS[name], s = [];
+    s.push({ bg: club ? club.bg : WR_BG[0], fg: club ? club.fg : "#fff", k: fullName(currentSeason) + " Wrapped", big: esc(initials(name)), sub: "<b>" + esc(name) + "</b>" + (sq.owner ? "<br>Owner: " + esc(sq.owner) : "") + "<br><small>Tap to continue ›</small>" });
+    const champ = sum.champion === name;
+    s.push({ k: sum.complete ? "You finished" : "You are currently", big: nth(pos + 1), sub: r.points + " points from " + r.played + " matches" + (champ ? "<br>🏆 <b>League champions!</b>" : pos === 0 ? "<br>🛡️ League Shield" : pos < qualifiers() ? "<br>In the playoff places" : "") });
+    const wr = Math.round(r.won / r.played * 100);
+    s.push({ k: "Your record", big: r.won + "-" + r.drawn + "-" + r.lost, sub: "Wins, draws, losses<br>You won <b>" + wr + "%</b> of your matches" });
+    s.push({ k: "Goals", big: r.gf, sub: "scored · " + r.ga + " conceded<br>Goal difference <b>" + (gd > 0 ? "+" : "") + gd + "</b> · " + (r.gf / r.played).toFixed(1) + " per match" });
+    const wins = tm.filter(function (x) { return x.res === "W"; }).sort(function (a, b) { return (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf; });
+    if (wins.length) { const b = wins[0]; s.push({ k: "Best day", big: b.gf + "-" + b.ga, sub: "vs <b>" + esc(teams[b.opp]) + "</b> in round " + (b.ri + 1) + (b.isHome ? " (home)" : " (away)") }); }
+    const losses = tm.filter(function (x) { return x.res === "L"; }).sort(function (a, b) { return (b.ga - b.gf) - (a.ga - a.gf) || b.ga - a.ga; });
+    s.push(losses.length ? { k: "Toughest day", big: losses[0].gf + "-" + losses[0].ga, sub: "vs <b>" + esc(teams[losses[0].opp]) + "</b> in round " + (losses[0].ri + 1) + "<br>We do not talk about it." }
+                         : { k: "Defeats", big: "0", sub: "You did not lose a single match. Untouchable." });
+    let bw = 0, bu = 0, cw = 0, cu = 0;
+    tm.slice().sort(function (a, b) { return a.ri - b.ri; }).forEach(function (x) { cw = x.res === "W" ? cw + 1 : 0; cu = x.res !== "L" ? cu + 1 : 0; bw = Math.max(bw, cw); bu = Math.max(bu, cu); });
+    s.push({ k: "Longest runs", big: bw + "W", sub: "Best winning streak<br>Longest unbeaten run: <b>" + bu + "</b> matches" });
+    const hp = tm.filter(function (x) { return x.isHome; }).reduce(function (n, x) { return n + (x.res === "W" ? 3 : x.res === "D" ? 1 : 0); }, 0);
+    const ap = tm.filter(function (x) { return !x.isHome; }).reduce(function (n, x) { return n + (x.res === "W" ? 3 : x.res === "D" ? 1 : 0); }, 0);
+    s.push({ k: "Home or away?", big: hp + " : " + ap, sub: "Points at home vs away<br>" + (hp > ap ? "A true fortress at home." : ap > hp ? "Better travellers than hosts." : "Same everywhere.") });
+    const opp = {};
+    tm.forEach(function (x) { opp[x.opp] = (opp[x.opp] || 0) + (x.gf - x.ga); });
+    const ok = Object.keys(opp).sort(function (a, b) { return opp[b] - opp[a]; });
+    if (ok.length > 1) { s.push({ k: "Rivals", big: "⚔️", sub: (opp[ok[0]] > 0 ? "Favourite victims: <b>" + esc(teams[ok[0]]) + "</b> (" + (opp[ok[0]] > 0 ? "+" : "") + opp[ok[0]] + ")" : "") + (opp[ok[ok.length - 1]] < 0 ? "<br>Nemesis: <b>" + esc(teams[ok[ok.length - 1]]) + "</b> (" + opp[ok[ok.length - 1]] + ")" : "") }); }
+    const cards = playerCards().filter(function (x) { return x.team === code; }).sort(function (a, b) { return b.goals - a.goals; });
+    const star = cards[0], keeper = cards.filter(function (x) { return x.gk; }).sort(function (a, b) { return b.gk.cs - a.gk.cs; })[0];
+    if (star && star.goals > 0) { s.push({ k: "Your top scorer", big: star.goals, sub: "goals for <b>" + esc(star.name) + "</b>" + (star.hat ? "<br>🎩 " + star.hat + " hat-trick" + (star.hat > 1 ? "s" : "") : "") + (keeper && keeper.gk.cs ? "<br>🧤 " + esc(keeper.name) + ": " + keeper.gk.cs + " clean sheets" : "") }); }
+    const po = stageList().filter(function (st) { const p = playoffScores[st]; return p && (p.home === code || p.away === code); });
+    if (po.length) {
+      s.push({ k: "Playoff journey", big: champ ? "🏆" : "🎟️", sub: po.map(function (st) { const p = playoffScores[st], mine = p.home === code, gf = mine ? p.hg : p.ag, ga = mine ? p.ag : p.hg, opp2 = mine ? p.away : p.home;
+        return esc(STAGE_NAMES[st]) + ": " + (playoffWinners[st] === code ? "won" : "lost") + " " + gf + "-" + ga + " vs " + esc(teams[opp2] || opp2); }).join("<br>") });
+    } else if (pos >= qualifiers() && sum.complete) { s.push({ k: "Playoffs", big: "—", sub: "Missed out this time. There is always next season." }); }
+    s.push({ bg: club ? club.bg : WR_BG[3], fg: club ? club.fg : "#fff", k: "That was your season", big: nth(pos + 1), sub: "<b>" + esc(name) + "</b><br>" + r.won + "W " + r.drawn + "D " + r.lost + "L · " + r.gf + ":" + r.ga + " · " + r.points + " pts" + (champ ? "<br>🏆 Champions" : "") + "<br><button class='wrbtn' onclick=\"event.stopPropagation();copyWrapped()\">📋 Copy summary</button>", copy: fullName(currentSeason) + " Wrapped · " + name + ": finished " + nth(pos + 1) + " with " + r.points + " pts (" + r.won + "W " + r.drawn + "D " + r.lost + "L, " + r.gf + ":" + r.ga + ")" + (champ ? " 🏆 Champions!" : "") });
+    return s;
+  }
+
+  function leagueWrappedSlides() {
+    const ms = chronoMatches();
+    if (!ms.length) { return null; }
+    const sum = seasonSummary(currentSeason), rows = buildStandings(), goals = ms.reduce(function (n, m) { return n + m.hg + m.ag; }, 0), s = [];
+    s.push({ bg: WR_BG[0], k: fullName(currentSeason), big: "WRAPPED", sub: "The season in numbers<br><small>Tap to continue ›</small>" });
+    s.push({ k: "Goals", big: goals, sub: "in " + ms.length + " matches<br><b>" + (goals / ms.length).toFixed(2) + "</b> per match" });
+    s.push({ k: sum.champion ? "Champions" : "League leaders", big: "🏆", sub: "<b>" + esc(sum.champion || rows[0].name) + "</b>" + (sum.shield ? "<br>League Shield: " + esc(sum.shield.name) : "") + (sum.runnerUp ? "<br>Runners-up: " + esc(sum.runnerUp) : "") });
+    const att = rows.slice().sort(function (a, b) { return b.gf - a.gf; })[0], def = rows.slice().sort(function (a, b) { return a.ga - b.ga; })[0];
+    s.push({ k: "Best attack & defence", big: att.gf, sub: "goals by <b>" + esc(att.name) + "</b><br>Best defence: <b>" + esc(def.name) + "</b> (" + def.ga + " conceded)" });
+    const big = ms.slice().sort(function (a, b) { return Math.abs(b.hg - b.ag) - Math.abs(a.hg - a.ag) || (b.hg + b.ag) - (a.hg + a.ag); })[0];
+    const hi = ms.slice().sort(function (a, b) { return (b.hg + b.ag) - (a.hg + a.ag) || Math.abs(a.hg - a.ag) - Math.abs(b.hg - b.ag); })[0];
+    s.push({ k: "Match of the season", big: hi.hg + "-" + hi.ag, sub: "<b>" + esc(teams[hi.home]) + " vs " + esc(teams[hi.away]) + "</b><br>Biggest win: " + esc(teams[big.home]) + " " + big.hg + "-" + big.ag + " " + esc(teams[big.away]) });
+    const boot = bootTotals();
+    if (boot.length) { s.push({ k: "Golden Boot", big: boot[0].goals, sub: "goals for <b>" + esc(boot[0].player) + "</b><br>" + esc(teams[boot[0].team]) }); }
+    const hat = hatTrickList([currentSeason]);
+    s.push({ k: "Hat-tricks", big: hat.length, sub: hat.length ? esc(hat.slice(0, 3).map(function (h) { return h.player; }).join(", ")) + (hat.length > 3 ? " and more" : "") : "None this season. Who will be first?" });
+    const dr = dramaList().filter(function (x) { return x.title === "Biggest Upset" || x.title === "Title Race Drama"; });
+    if (dr.length) { s.push({ k: dr[0].title, big: dr[0].icon, sub: "<b>" + esc(dr[0].main) + "</b><br>" + esc(dr[0].detail) }); }
+    if (transfersOn() && seasonTransfers().length) { s.push({ k: "Transfers", big: seasonTransfers().filter(function (t) { return !isNewSigning(t); }).length, sub: "players changed club<br>" + seasonTransfers().filter(isNewSigning).length + " new players joined" }); }
+    s.push({ bg: WR_BG[3], k: "See you next season", big: "⚽", sub: "Thanks for playing.<br><button class='wrbtn' onclick=\"event.stopPropagation();copyWrapped()\">📋 Copy summary</button>", copy: fullName(currentSeason) + " Wrapped: " + goals + " goals in " + ms.length + " matches. " + (sum.champion ? "Champions: " + sum.champion + "." : "Leaders: " + rows[0].name + ".") });
+    return s;
+  }
+
+  function openWrapped(code) {
+    const slides = code === "LEAGUE" ? leagueWrappedSlides() : teamWrappedSlides(code);
+    if (!slides) { toast("Play some matches first.", "err"); return; }
+    closeWrapped();
+    wrState = { slides: slides, i: 0 };
+    const el = document.createElement("div");
+    el.className = "wr"; el.id = "wr";
+    document.body.appendChild(el);
+    el.addEventListener("click", function (e) { const x = e.clientX / window.innerWidth; if (x < 0.3) { wrGo(-1); } else { wrGo(1); } });
+    wrDraw();
+  }
+  function closeWrapped() { const el = document.getElementById("wr"); if (el) { el.remove(); } wrState = null; }
+  function wrGo(d) {
+    if (!wrState) { return; }
+    const n = wrState.i + d;
+    if (n >= wrState.slides.length) { closeWrapped(); return; }
+    if (n < 0) { return; }
+    wrState.i = n; wrDraw();
+  }
+  function wrDraw() {
+    const el = document.getElementById("wr");
+    if (!el || !wrState) { return; }
+    const sl = wrState.slides[wrState.i];
+    el.style.background = sl.bg || WR_BG[(wrState.i % (WR_BG.length - 1)) + 1];
+    el.style.color = sl.fg || "#fff";
+    el.innerHTML = "<div class='wbars'>" + wrState.slides.map(function (_, j) { return "<i class='" + (j < wrState.i ? "done" : j === wrState.i ? "on" : "") + "'><b></b></i>"; }).join("") + "</div>" +
+      "<button class='wx' onclick='event.stopPropagation();closeWrapped()'>✕</button>" +
+      "<div class='wslide'><div class='wk'>" + esc(sl.k) + "</div><div class='wbig'>" + (typeof sl.big === "number" ? sl.big : sl.big) + "</div><div class='wsub'>" + sl.sub + "</div></div>";
+  }
+  function copyWrapped() {
+    const sl = wrState && wrState.slides[wrState.slides.length - 1];
+    if (!sl || !sl.copy) { return; }
+    const done = function () { toast("Summary copied ✓"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(sl.copy).then(done, function () { toast("Could not copy.", "err"); }); }
+    else { toast("Could not copy.", "err"); }
+  }
+  document.addEventListener("keydown", function (e) {
+    if (!wrState) { return; }
+    if (e.key === "ArrowRight" || e.key === " ") { wrGo(1); } else if (e.key === "ArrowLeft") { wrGo(-1); } else if (e.key === "Escape") { closeWrapped(); }
+  });
+
+  function pageWrapped() {
+    const rows = buildStandings();
+    if (!chronoMatches().length) { return "<div class='card'><p class='legend'>Wrapped appears once matches have been played.</p></div>"; }
+    const sum = seasonSummary(currentSeason);
+    let html = "<p class='legend'>A swipe-through story of the season for every club, like a music year in review. " + (sum.complete ? "The season is complete." : "The season is still in progress, so numbers are provisional.") + " Tap the right side to move on, the left side to go back.</p>" +
+      "<div class='po'><div class='pocard' style='border-left-color:var(--gold);cursor:pointer' onclick=\"openWrapped('LEAGUE')\"><small>🌍 Whole league</small><b>League Wrapped</b><div class='legend'>Goals, champions, awards and drama</div></div>" +
+      rows.map(function (r, i) {
+        return "<div class='pocard' style='cursor:pointer' onclick=\"openWrapped('" + r.code + "')\"><small>#" + (i + 1) + " · " + r.points + " pts</small><div style='display:flex;align-items:center;gap:10px'><span class='badge big'>" + esc(initials(r.name)) + "</span><b style='font-size:18px'>" + esc(r.name) + "</b></div><div class='legend'>Open " + esc(r.name) + " Wrapped ›</div></div>";
+      }).join("") + "</div>";
+    return html;
+  }
+
 function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.toggle("full"); }
 
 // ---- smooth transitions ----
@@ -2740,7 +3185,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
   }
 
   // =============== HOME PAGE ===============
-  const TILE_INFO = { Standings: "League table", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Golden Glove": "Keepers & clean sheets", "Player of Season": "Vote for the best", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
+  const TILE_INFO = { Standings: "League table", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Player Cards": "Rated player cards", Wrapped: "Season story", "Golden Glove": "Keepers & clean sheets", "Player of Season": "Vote for the best", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
   function goTab(t) { currentTab = t; render(); window.scrollTo(0, 0); }
   function pageHome() {
     const table = buildStandings(), played = getPlayedMatches();
@@ -2781,7 +3226,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       return "<button data-tab='" + t + "' class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
     setNav(navHtml);
-    const pages = { Matches: pageMatchesHall, "Clean Sheets": pageCleanHall, "Hat-tricks": pageHatHall, Rivalries: pageRivalries, Compare: pageCompare, "Golden Glove": pageGlove, "Player of Season": pagePots, Overall: pageOverall, "Goals For": pageGoalsFor, "Goals Against": pageGoalsAgainst, Unbeaten: pageUnbeaten, "All-time Boot": pageAllBoot, Cabinets: pageCabinets, Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { Matches: pageMatchesHall, "Clean Sheets": pageCleanHall, "Hat-tricks": pageHatHall, Rivalries: pageRivalries, Compare: pageCompare, "Golden Glove": pageGlove, "Player of Season": pagePots, Overall: pageOverall, "Goals For": pageGoalsFor, "Goals Against": pageGoalsAgainst, Unbeaten: pageUnbeaten, "All-time Boot": pageAllBoot, Cabinets: pageCabinets, Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Player Cards": pageCards, Wrapped: pageWrapped, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = loaded ? pageHead() + (currentTab === "Standings" ? heroLeader() : "") + pages[currentTab]() : skeleton();
 
@@ -3426,6 +3871,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       return "<div class='pocard' style='border-left-color:var(--gold)'><small>" + x.icon + " " + esc(x.title) + "</small><div style='display:flex;align-items:center;gap:10px'>" +
         (x.code ? "<span class='badge big'>" + esc(initials(teams[x.code] || x.main)) + "</span>" : "") + "<div><b style='font-size:18px'>" + esc(x.main) + "</b><div class='legend'>" + esc(x.detail) + "</div></div></div></div>";
     }).join("") + "</div>";
+    html += dramaHtml();
     const pw = potwAll();
     if (pw.length) {
       html += "<div class='card' style='margin-top:16px'><h3>⭐ Players of the Week</h3>" + pw.slice().reverse().map(function (w) {
