@@ -705,20 +705,22 @@ table.st tr.pl-up { --pl:34,197,94; } table.st tr.pl-down { --pl:239,68,68; }
 .tr-floor { position:absolute; left:50%; top:56%; width:2600px; height:2600px; margin:-1300px 0 0 -1300px; transform:rotateX(90deg); background:radial-gradient(circle at 50% 50%,#34455f 0,#162235 38%,#0a1018 70%); }
 .tr-ring { position:absolute; left:50%; top:56%; width:0; height:0; transform-style:preserve-3d; }
 .tr-disc { position:absolute; left:0; top:0; border-radius:50%; transform:rotateX(90deg); background:repeating-conic-gradient(from 0deg,rgba(255,215,120,.16) 0 10deg,rgba(255,215,120,.03) 10deg 20deg),radial-gradient(circle,#2a3a52,#101826 80%); box-shadow:0 0 0 6px rgba(245,179,1,.35); }
-.tr-item { position:absolute; left:-80px; top:-190px; width:160px; height:190px; transform-style:preserve-3d; }
+.tr-item { position:absolute; left:-85px; top:-240px; width:170px; height:240px; transform-style:preserve-3d; }
 .tr-face { position:absolute; inset:0; }
-.tr-cone { position:absolute; left:50%; bottom:30px; width:170px; height:300px; margin-left:-85px; background:linear-gradient(to bottom,rgba(255,240,180,.30),transparent); clip-path:polygon(42% 0,58% 0,100% 100%,0 100%); pointer-events:none; opacity:.55; transition:opacity .4s; }
+.tr-cone { position:absolute; left:50%; bottom:56px; width:170px; height:300px; margin-left:-85px; background:linear-gradient(to bottom,rgba(255,240,180,.30),transparent); clip-path:polygon(42% 0,58% 0,100% 100%,0 100%); pointer-events:none; opacity:.55; transition:opacity .4s; }
 .tr-item.front .tr-cone { opacity:1; }
-.tr-ico { position:absolute; left:0; right:0; bottom:34px; text-align:center; font-size:78px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.7)); -webkit-box-reflect:below 6px linear-gradient(transparent 58%,rgba(255,255,255,.28)); }
+.tr-ico { position:absolute; left:0; right:0; bottom:60px; text-align:center; font-size:78px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.7)); -webkit-box-reflect:below 6px linear-gradient(transparent 58%,rgba(255,255,255,.28)); }
 .tr-ico em { position:absolute; right:14px; top:-6px; font:700 15px var(--font-body); font-style:normal; background:#f5b301; color:#2a1c00; border-radius:999px; padding:1px 8px; }
 .tr-item.front .tr-ico { filter:drop-shadow(0 0 20px rgba(255,205,70,.95)) drop-shadow(0 8px 10px rgba(0,0,0,.7)); }
 .tr-ico.s3, .tr-ico.s4, .tr-ico.s5 { font-size:92px; }
-.tr-ped { position:absolute; left:50%; bottom:0; width:96px; height:36px; margin-left:-48px; border-radius:8px 8px 4px 4px; background:linear-gradient(#f0e2a8,#a8862c 60%,#6b5313); box-shadow:0 10px 18px rgba(0,0,0,.65); }
-.tr-plate { position:absolute; top:100%; left:50%; width:170px; margin:10px 0 0 -85px; text-align:center; color:#f5e7b8; }
-.tr-plate b { display:block; font:700 14px var(--font-head); letter-spacing:.5px; text-transform:uppercase; }
-.tr-plate small { display:block; font-size:11px; opacity:.75; margin-top:2px; }
+.tr-ped { position:absolute; left:50%; bottom:0; width:156px; height:58px; margin-left:-78px; padding:4px 8px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-radius:8px 8px 4px 4px; color:#2a1c00; background:linear-gradient(#f4e8b4,#c9a43a 55%,#7a5f15); box-shadow:0 10px 18px rgba(0,0,0,.65); overflow:hidden; }
+.tr-ped b { font:700 12px/1.1 var(--font-body); letter-spacing:.4px; text-transform:uppercase; }
+.tr-ped small { font:600 9.5px/1.15 var(--font-body); opacity:.8; margin-top:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tr-cap { position:absolute; left:50%; bottom:36px; transform:translateX(-50%); max-width:92%; text-align:center; background:rgba(8,12,20,.78); border:1px solid rgba(245,179,1,.5); border-radius:12px; padding:7px 14px; z-index:3; pointer-events:none; }
+.tr-cap b { display:block; font:700 14px var(--font-body); color:#ffd166; text-transform:uppercase; letter-spacing:.5px; }
+.tr-cap span { display:block; font-size:11px; color:#cfd9e6; margin-top:1px; }
 .tr-vig { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55)); }
-.tr-hint { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:12px; color:rgba(255,255,255,.55); pointer-events:none; }
+.tr-hint { position:absolute; left:0; right:0; bottom:8px; text-align:center; font-size:12px; color:rgba(255,255,255,.55); pointer-events:none; }
 .tr-info { margin-top:12px; text-align:center; }
 
 /* ---------- season trophy ceremony ---------- */
@@ -4880,9 +4882,8 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       items.map(function (g, i) {
         const ang = Math.round((i - (N - 1) / 2) * step * 10) / 10;
         return "<div class='tr-item' data-i='" + i + "' data-a='" + ang + "' style='transform:rotateY(" + ang + "deg) translateZ(" + R + "px)'><div class='tr-face'><div class='tr-cone'></div>" +
-          "<div class='tr-ico s" + g.rank + "'>" + g.icon + (g.seasons.length > 1 && g.rank ? "<em>×" + g.seasons.length + "</em>" : "") + "</div><div class='tr-ped'></div>" +
-          "<div class='tr-plate'><b>" + esc(g.title) + "</b><small>" + esc(g.seasons.join(" · ")) + "</small></div></div></div>";
-      }).join("") + "</div></div><div class='tr-vig'></div><div class='tr-hint'>↔ Drag to look around</div></div>" +
+          "<div class='tr-ico s" + g.rank + "'>" + g.icon + (g.seasons.length > 1 && g.rank ? "<em>×" + g.seasons.length + "</em>" : "") + "</div><div class='tr-ped'><b>" + esc(g.title) + "</b><small>" + esc(g.seasons.join(" · ")) + "</small></div></div></div>";
+      }).join("") + "</div></div><div class='tr-vig'></div><div class='tr-cap' id='trCap'></div><div class='tr-hint'>↔ Drag to look around</div></div>" +
       "<div class='card tr-info' id='trInfo'><b>" + esc(a.name) + "</b> · " + a.tr.length + (a.tr.length === 1 ? " award" : " awards") + "</div>";
     return html;
   }
@@ -4906,8 +4907,12 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       if (best !== S.front) {
         S.front = best;
         S.items.forEach(function (it, i) { it.classList.toggle("front", i === best); });
-        const g = S.items[best], info = document.getElementById("trInfo");
-        if (info && g) { const p = g.querySelector(".tr-plate"); info.innerHTML = "<b>" + p.querySelector("b").innerHTML + "</b><div class='legend'>" + p.querySelector("small").innerHTML + "</div>"; }
+        const g = S.items[best], info = document.getElementById("trInfo"), cap = document.getElementById("trCap");
+        if (g) {
+          const p = g.querySelector(".tr-ped"), t = p.querySelector("b").innerHTML, d = p.querySelector("small").innerHTML;
+          if (info) { info.innerHTML = "<b>" + t + "</b><div class='legend'>" + d + "</div>"; }
+          if (cap) { cap.innerHTML = "<b>" + t + "</b><span>" + d + "</span>"; }
+        }
       }
     }
     function loop() {
