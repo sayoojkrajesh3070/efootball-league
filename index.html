@@ -1433,13 +1433,42 @@ table.st td { position:relative; }
   }
 
   // =============== LOAD FROM DATABASE ===============
+  let loadingNow = false, retryTimer = null, retryCount = 0;
+
+  // gives up on a request that never answers, so the page can retry instead of loading forever
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      const t = setTimeout(function () { reject(new Error("timeout")); }, ms);
+      Promise.resolve(promise).then(
+        function (v) { clearTimeout(t); resolve(v); },
+        function (e) { clearTimeout(t); reject(e); }
+      );
+    });
+  }
+
+  // first load failed: show a message and try again (3s, 6s, 9s ... up to 15s between tries)
+  function loadFailed() {
+    if (loaded) { return; }   // data is already on screen; the 30 second refresh tries again quietly
+    retryCount++;
+    setStatus(retryCount < 3 ? "Could not load, retrying…" : "Still can't reach the database. Retrying… check your internet.");
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(loadData, Math.min(3000 * retryCount, 15000));
+  }
+
   async function loadData() {
-    const q = await Promise.all([
-      sb.from("results").select("*"), sb.from("playoffs").select("*"), sb.from("squads").select("*"), sb.from("goals").select("*"),
-      sb.from("transfers").select("*").order("id", { ascending: false }), sb.from("gk_stats").select("*"), sb.from("potm_votes").select("*")
-    ]);
+    if (loadingNow) { return; }
+    loadingNow = true;
+    let q = null;
+    try {
+      q = await withTimeout(Promise.all([
+        sb.from("results").select("*"), sb.from("playoffs").select("*"), sb.from("squads").select("*"), sb.from("goals").select("*"),
+        sb.from("transfers").select("*").order("id", { ascending: false }), sb.from("gk_stats").select("*"), sb.from("potm_votes").select("*")
+      ]), 12000);
+    } catch (e) { q = null; }
+    loadingNow = false;
+    if (!q || q[0].error || q[1].error || q[2].error) { loadFailed(); return; }
     const r = q[0], p = q[1], s = q[2], g = q[3], tr = q[4], gk = q[5], vt = q[6];
-    if (r.error || p.error || s.error) { loaded = true; setStatus("Could not load data. Check your internet and refresh."); render(); return; }
+    retryCount = 0; clearTimeout(retryTimer);
     setStatus("");
     allResults = r.data; allPlayoffs = p.data; allSquads = s.data; allGoals = g.error ? [] : g.data;
     allTransfers = tr.error ? [] : tr.data;
