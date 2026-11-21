@@ -687,6 +687,106 @@ button,.tile,.tl,nav button,.rounds button { touch-action:manipulation; }
 .pcard.star { background:linear-gradient(160deg,#f0d6ff,#9b4dff 55%,#4b1aa3); color:#fff; }
 .pcard .pedi { position:absolute; left:0; right:0; bottom:0; padding:3px 0; background:rgba(0,0,0,.35); color:#fff; font:700 9px var(--font-body); letter-spacing:1.5px; }
 .pshare { margin:-8px 0 16px; }
+/* ---------- stadium night mode ---------- */
+.nightbtn { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.3); border-radius:999px; padding:6px 12px; font:700 12px var(--font-body); cursor:pointer; margin-right:8px; white-space:nowrap; }
+.nightbtn:hover { background:rgba(255,255,255,.22); }
+.night-fx { position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; display:none; }
+body.night .night-fx { display:block; }
+body.night { --bg:#050b13; --card:#0d1620; --line:#1b2b3c; --soft:#0f1d2b; --text:#eaf2fb; --muted:#8ea3b8; --gold:#ffd166; }
+body.night, body.night main { background:transparent; }
+html:has(body.night) { background:#050b13; }
+.night-fx .ngl { position:absolute; inset:0; opacity:.09; background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 900' fill='none' stroke='white' stroke-width='3'><rect x='20' y='20' width='560' height='860'/><line x1='20' y1='450' x2='580' y2='450'/><circle cx='300' cy='450' r='85'/><rect x='160' y='20' width='280' height='130'/><rect x='160' y='750' width='280' height='130'/><rect x='230' y='20' width='140' height='50'/><rect x='230' y='830' width='140' height='50'/></svg>") center/cover no-repeat; }
+.night-fx .beam { position:absolute; top:-12%; width:70vw; height:140vh; background:linear-gradient(180deg,rgba(255,244,200,.26),rgba(255,244,200,0) 72%); clip-path:polygon(46% 0,54% 0,100% 100%,0 100%); filter:blur(12px); transform-origin:50% 0; animation:beamSway 10s ease-in-out infinite alternate; }
+.night-fx .beam.l { left:-18vw; transform:rotate(-20deg); }
+.night-fx .beam.r { right:-18vw; transform:rotate(20deg); animation-delay:-5s; }
+.night-fx .nglow { position:absolute; left:50%; bottom:-25%; width:150vw; height:65vh; transform:translateX(-50%); background:radial-gradient(ellipse at center,rgba(40,170,95,.22),transparent 65%); }
+@keyframes beamSway { from { opacity:.7; } to { opacity:1; } }
+body.night .card, body.night .pocard { box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.45); }
+body.night table.st tr.top4 td:first-child { box-shadow:inset 3px 0 0 #2ee6a6; }
+@media (prefers-reduced-motion:reduce) { .night-fx .beam { animation:none; } }
+/* ---------- pulse table ---------- */
+table.st tr[data-code] { will-change:transform; }
+table.st tr.pl-up, table.st tr.pl-down { position:relative; z-index:3; animation:plGlow 2.6s ease-out both; }
+table.st tr.pl-up { --pl:34,197,94; } table.st tr.pl-down { --pl:239,68,68; }
+@keyframes plGlow { 0% { background:rgba(var(--pl),.38); box-shadow:0 0 24px rgba(var(--pl),.7); } 100% { background:transparent; box-shadow:none; } }
+.mv.up { color:#22c55e !important; text-shadow:0 0 8px rgba(34,197,94,.9); animation:mvPulse 1.8s ease-in-out infinite; }
+.mv.down { color:#ef4444 !important; text-shadow:0 0 8px rgba(239,68,68,.9); animation:mvPulse 1.8s ease-in-out infinite; }
+@keyframes mvPulse { 0%,100% { opacity:.65; } 50% { opacity:1; } }
+@media (prefers-reduced-motion:reduce) { .mv.up, .mv.down { animation:none; } }
+/* ---------- 3D trophy room ---------- */
+.tr-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+.tr-stage { position:relative; height:min(470px,66vh); min-height:360px; perspective:1500px; overflow:hidden; border-radius:16px; border:1px solid var(--line); background:radial-gradient(ellipse at 50% 18%,#22324a,#080d16 72%); cursor:grab; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+.tr-stage:active { cursor:grabbing; }
+.tr-room { position:absolute; inset:0; transform-style:preserve-3d; transform-origin:50% 56%; }
+.tr-wall { position:absolute; left:50%; top:56%; width:3200px; height:900px; margin:-900px 0 0 -1600px; transform:translateZ(-760px); background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 110px),linear-gradient(#1a2840,#0a111d); border-bottom:6px solid #3a2d12; }
+.tr-floor { position:absolute; left:50%; top:56%; width:2600px; height:2600px; margin:-1300px 0 0 -1300px; transform:rotateX(90deg); background:radial-gradient(circle at 50% 50%,#34455f 0,#162235 38%,#0a1018 70%); }
+.tr-ring { position:absolute; left:50%; top:56%; width:0; height:0; transform-style:preserve-3d; }
+.tr-disc { position:absolute; left:0; top:0; border-radius:50%; transform:rotateX(90deg); background:repeating-conic-gradient(from 0deg,rgba(255,215,120,.16) 0 10deg,rgba(255,215,120,.03) 10deg 20deg),radial-gradient(circle,#2a3a52,#101826 80%); box-shadow:0 0 0 6px rgba(245,179,1,.35); }
+.tr-item { position:absolute; left:-80px; top:-190px; width:160px; height:190px; transform-style:preserve-3d; }
+.tr-face { position:absolute; inset:0; }
+.tr-cone { position:absolute; left:50%; bottom:30px; width:170px; height:300px; margin-left:-85px; background:linear-gradient(to bottom,rgba(255,240,180,.30),transparent); clip-path:polygon(42% 0,58% 0,100% 100%,0 100%); pointer-events:none; opacity:.55; transition:opacity .4s; }
+.tr-item.front .tr-cone { opacity:1; }
+.tr-ico { position:absolute; left:0; right:0; bottom:34px; text-align:center; font-size:78px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.7)); -webkit-box-reflect:below 6px linear-gradient(transparent 58%,rgba(255,255,255,.28)); }
+.tr-ico em { position:absolute; right:14px; top:-6px; font:700 15px var(--font-body); font-style:normal; background:#f5b301; color:#2a1c00; border-radius:999px; padding:1px 8px; }
+.tr-item.front .tr-ico { filter:drop-shadow(0 0 20px rgba(255,205,70,.95)) drop-shadow(0 8px 10px rgba(0,0,0,.7)); }
+.tr-ico.s3, .tr-ico.s4, .tr-ico.s5 { font-size:92px; }
+.tr-ped { position:absolute; left:50%; bottom:0; width:96px; height:36px; margin-left:-48px; border-radius:8px 8px 4px 4px; background:linear-gradient(#f0e2a8,#a8862c 60%,#6b5313); box-shadow:0 10px 18px rgba(0,0,0,.65); }
+.tr-plate { position:absolute; top:100%; left:50%; width:170px; margin:10px 0 0 -85px; text-align:center; color:#f5e7b8; }
+.tr-plate b { display:block; font:700 14px var(--font-head); letter-spacing:.5px; text-transform:uppercase; }
+.tr-plate small { display:block; font-size:11px; opacity:.75; margin-top:2px; }
+.tr-vig { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55)); }
+.tr-hint { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:12px; color:rgba(255,255,255,.55); pointer-events:none; }
+.tr-info { margin-top:12px; text-align:center; }
+
+/* ---------- season trophy ceremony ---------- */
+.cer { position:fixed; inset:0; z-index:600; background:radial-gradient(ellipse at 50% 30%,#13203a,#03060c 75%); color:#fff; overflow:hidden; font-family:var(--font-body); animation:cerFade .6s ease both; cursor:pointer; user-select:none; -webkit-user-select:none; }
+@keyframes cerFade { from { opacity:0; } to { opacity:1; } }
+.cer canvas { position:absolute; inset:0; pointer-events:none; z-index:3; }
+.cer-x { position:absolute; top:calc(14px + env(safe-area-inset-top,0px)); right:14px; z-index:5; background:rgba(255,255,255,.14); color:#fff; border:0; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; }
+.cer-scene { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; z-index:2; }
+.cer-dots { position:absolute; left:0; right:0; bottom:calc(24px + env(safe-area-inset-bottom,0px)); display:flex; gap:8px; justify-content:center; z-index:4; }
+.cer-dots i { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.25); }
+.cer-dots i.on { background:#f5b301; box-shadow:0 0 10px #f5b301; } .cer-dots i.done { background:rgba(255,255,255,.7); }
+.cer-hint { position:absolute; bottom:calc(50px + env(safe-area-inset-bottom,0px)); left:0; right:0; text-align:center; font-size:12px; letter-spacing:2px; opacity:.5; z-index:4; text-transform:uppercase; }
+.cer-k { letter-spacing:5px; text-transform:uppercase; font-size:13px; font-weight:700; color:#f5b301; margin-bottom:14px; animation:cerIn .8s ease both; }
+.cer-t { font:400 clamp(54px,15vw,120px)/0.95 var(--font-head); text-transform:uppercase; }
+.cer-s { font-size:18px; max-width:440px; opacity:.85; margin-top:14px; }
+.cer-in { animation:cerIn .9s cubic-bezier(.2,.9,.3,1.1) both; }
+.cer-in.d2 { animation-delay:.8s; } .cer-in.d3 { animation-delay:1.6s; } .cer-in.d4 { animation-delay:2.2s; }
+@keyframes cerIn { from { opacity:0; transform:translateY(30px) scale(.95); } to { opacity:1; transform:none; } }
+.cer-sweep { position:absolute; inset:0; background:conic-gradient(from 200deg at 50% -10%,transparent 0 20%,rgba(255,240,180,.28) 25%,transparent 30%); animation:cerSweep 3s ease-in-out both; z-index:-1; }
+@keyframes cerSweep { from { transform:rotate(-30deg); opacity:0; } 50% { opacity:1; } to { transform:rotate(30deg); opacity:.4; } }
+.cer-pod { display:flex; align-items:flex-end; justify-content:center; gap:10px; width:100%; max-width:560px; height:56vh; min-height:330px; }
+.pcol { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.pcol .pwho { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:8px; opacity:0; animation:cerIn .8s ease both; }
+.pcol .pwho b { font:400 20px var(--font-head); text-transform:uppercase; }
+.pcol .pwho small { opacity:.7; font-size:11px; letter-spacing:1px; text-transform:uppercase; }
+.pcol .pbar { width:100%; border-radius:10px 10px 0 0; display:flex; justify-content:center; padding-top:10px; font:400 44px var(--font-head); transform-origin:bottom; transform:scaleY(0); animation:cerRise 1s cubic-bezier(.2,.9,.2,1) both; }
+.pcol.p3 .pbar { height:26%; background:linear-gradient(#d9985a,#8a5424); animation-delay:.2s; } .pcol.p3 .pwho { animation-delay:1s; }
+.pcol.p2 .pbar { height:40%; background:linear-gradient(#e6ebf2,#8b96a6); color:#222; animation-delay:1.9s; } .pcol.p2 .pwho { animation-delay:2.7s; }
+.pcol.p1 .pbar { height:58%; background:linear-gradient(#ffe27a,#c28a00); color:#3a2700; animation-delay:3.8s; } .pcol.p1 .pwho { animation-delay:4.6s; }
+.pcol.p1 .pwho b { color:#ffd166; font-size:24px; }
+@keyframes cerRise { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+.cer-crest { display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px; border-radius:50%; font:700 16px var(--font-head); box-shadow:0 0 0 3px rgba(255,255,255,.25); }
+.cer-crest.big { width:120px; height:120px; font-size:36px; box-shadow:0 0 0 5px rgba(245,179,1,.8),0 0 50px rgba(245,179,1,.55); }
+.cer-spot { position:absolute; left:50%; top:-10%; width:90vmin; height:130vh; margin-left:-45vmin; background:linear-gradient(180deg,rgba(255,240,180,.35),transparent 75%); clip-path:polygon(44% 0,56% 0,100% 100%,0 100%); z-index:-1; animation:cerIn 1.2s ease both; }
+.cer-cup { font-size:clamp(90px,26vw,170px); line-height:1; filter:drop-shadow(0 0 30px rgba(255,205,70,.9)); animation:cerCup 1.6s cubic-bezier(.2,.9,.3,1.15) both; }
+@keyframes cerCup { from { transform:translateY(160px) scale(.4); opacity:0; } to { transform:none; opacity:1; } }
+.cer-crestwrap { margin:22px 0 10px; animation:cerIn 1s ease .9s both; }
+.cer-champ { font:400 clamp(44px,12vw,92px)/1 var(--font-head); text-transform:uppercase; color:#ffd166; text-shadow:0 0 30px rgba(245,179,1,.5); }
+.cer-champ.small { font-size:clamp(34px,9vw,64px); }
+.cer-awards { display:flex; flex-direction:column; gap:12px; width:100%; max-width:460px; margin-top:6px; }
+.cer-aw { display:flex; align-items:center; gap:14px; text-align:left; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-left:5px solid #f5b301; border-radius:14px; padding:12px 16px; opacity:0; animation:cerFromL .8s cubic-bezier(.2,.9,.3,1.1) both; }
+.cer-aw.fromr { animation-name:cerFromR; }
+.cer-aw .ai { font-size:36px; }
+.cer-aw small { letter-spacing:2px; text-transform:uppercase; font-size:11px; color:#f5b301; font-weight:700; display:block; }
+.cer-aw b { font:400 24px var(--font-head); text-transform:uppercase; }
+.cer-aw .legend { color:rgba(255,255,255,.7); }
+@keyframes cerFromL { from { opacity:0; transform:translateX(-80px); } to { opacity:1; transform:none; } }
+@keyframes cerFromR { from { opacity:0; transform:translateX(80px); } to { opacity:1; transform:none; } }
+.cer-btns { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px; }
+.cer-btns button { background:#fff; color:#111; border:0; border-radius:999px; padding:11px 20px; font:700 14px var(--font-body); cursor:pointer; }
+.cer-scene.calm *, .cer-scene.calm { animation-duration:.01s !important; animation-delay:0s !important; }
 /* ---------- season wrapped ---------- */
 .wr { position:fixed; inset:0; z-index:400; display:flex; flex-direction:column; font-family:var(--font-body); user-select:none; -webkit-user-select:none; animation:fadeIn .25s ease both; }
 .wr .wbars { display:flex; gap:4px; padding:calc(14px + env(safe-area-inset-top,0px)) 14px 0; }
@@ -853,6 +953,7 @@ table.st td { position:relative; }
       <p id="subTitle">10 teams · home &amp; away · 18 rounds · top 6 to the playoffs</p>
     </div>
     <div class="brand-tools">
+      <button class="nightbtn" id="nightBtn" onclick="toggleNight()" aria-pressed="false">🌙 Night</button>
       <label class="sbar">Season <select id="seasonSel" onchange="switchSeason(this.value)"></select></label>
     </div>
   </div>
@@ -1661,11 +1762,13 @@ table.st td { position:relative; }
     if (done) { html += "<div class='shield'>🛡️ League Shield winners: " + rows[0].name + "</div>"; }
     html += (typeof fxPodium === "function" ? fxPodium(rows) : "");
     html += overviewStrip();
+    const cerBtn = ceremonyButton();
+    html += "<p style='display:flex;flex-wrap:wrap;gap:8px'>" + (lastPlayedRound() >= 2 ? "<button class='btn out' onclick='pulseTable()'>▶ Replay the last round's moves</button>" : "") + cerBtn + "</p>";
     html += "<button class='btn out mfull' onclick='toggleFull(this)'>⇄ Full stats</button><div class='card scroll'><table class='st'><tr><th>#</th><th class='left'>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th></tr>";
     rows.forEach(function (r, i) {
       const gd = r.gf - r.ga;
       const form = r.form.slice(-5).map(function (f) { return "<span class='" + f + "'>" + f + "</span>"; }).join("");
-      html += "<tr class='" + (i < qualifiers() ? "top4" : "") + "'><td>" + (i + 1) + moveTag(r.code, i) + "</td>" +
+      html += "<tr class='" + (i < qualifiers() ? "top4" : "") + "' data-code='" + r.code + "'><td>" + (i + 1) + moveTag(r.code, i) + "</td>" +
         "<td class='left'><span class='badge'>" + initials(r.name) + "</span><a class='tl' onclick=\"openTeam('" + r.code + "')\">" + r.name + "</a>" + (i === 0 ? " 🛡️" : "") + badgeIcons(badges[r.code]) + "</td>" +
         "<td>" + r.played + "</td><td>" + r.won + "</td><td>" + r.drawn + "</td><td>" + r.lost + "</td>" +
         "<td>" + r.gf + "</td><td>" + r.ga + "</td><td>" + (gd > 0 ? "+" + gd : gd) + "</td>" +
@@ -2550,7 +2653,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
               (bd ? "<b>" + b.h + " - " + b.a + "</b>" : "vs") + " " + esc(teams[found.home]) + (bd ? "" : " <span class='legend'>(not played yet)</span>") + "</div>";
     }
 
-    if (done) { html += punditBox(id); }
+    if (done) { html += punditBox(id) + milestoneBox(id); }
     // scorers: goals logged on the Golden Boot tab for this round
     const sc = goalLog.filter(function (g) { return Number(g.round) === found.ri + 1 && (g.team === found.home || g.team === found.away); });
     html += "<div class='msec'><h4>Scorers</h4>";
@@ -2864,7 +2967,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
   function pageNews() {
     return "<div class='po'>" + buildNews().map(function (n) {
       return "<div class='pocard' style='border-left-color:var(--gold)'><b style='font-size:18px'>" + n.icon + " " + esc(n.title) + "</b><div class='legend' style='margin-top:6px'>" + esc(n.text) + "</div></div>";
-    }).join("") + "</div><p class='legend'>News is generated automatically from results, playoffs and goals.</p>" + punditNewsHtml();
+    }).join("") + "</div><p class='legend'>News is generated automatically from results, playoffs and goals.</p>" + milestonesHtml() + punditNewsHtml();
   }
 
   function qualStatus() {
@@ -3149,7 +3252,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     });
     return out;
   }
-  function tableUpTo(n) {
+  function tableRowsUpTo(n) {
     const rows = {};
     Object.keys(teams).forEach(function (c) { rows[c] = { code: c, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, form: [] }; });
     chronoMatches().filter(function (m) { return m.ri < n; }).forEach(function (m) {
@@ -3172,7 +3275,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     const m = chronoMatches().find(function (x) { return x.id === id; });
     if (!m) { return null; }
     const seed = hashStr(id + "|" + currentSeason);
-    const pre = tableUpTo(m.ri), post = tableUpTo(m.ri + 1), pp = posMap(pre), qp = posMap(post);
+    const pre = tableRowsUpTo(m.ri), post = tableRowsUpTo(m.ri + 1), pp = posMap(pre), qp = posMap(post);
     function row(c) { return pre.find(function (r) { return r.code === c; }); }
     const H = teams[m.home], A = teams[m.away], tot = m.hg + m.ag, diff = Math.abs(m.hg - m.ag);
     let w = null, l = null;
@@ -3255,7 +3358,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     const ms = chronoMatches();
     if (ms.length < 5) { return []; }
     const nR = Math.max.apply(null, ms.map(function (m) { return m.ri; })) + 1, cache = {};
-    function pos(n) { return cache[n] || (cache[n] = posMap(tableUpTo(n))); }
+    function pos(n) { return cache[n] || (cache[n] = posMap(tableRowsUpTo(n))); }
     let upset = null, thrash = null, thriller = null;
     const kill = {}, oneGoal = {}, draws = {}, out = [];
     ms.forEach(function (m) {
@@ -3288,7 +3391,7 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     const dk = maxOf(draws, 3);
     if (dk) { out.push({ icon: "🤝", title: "Draw Kings", main: names(dk.codes), code: dk.codes[0], detail: dk.n + " draws" }); }
     let changes = 0, prev = null;
-    for (let n = 1; n <= nR; n++) { const lead = tableUpTo(n)[0].code; if (prev && lead !== prev) { changes++; } prev = lead; }
+    for (let n = 1; n <= nR; n++) { const lead = tableRowsUpTo(n)[0].code; if (prev && lead !== prev) { changes++; } prev = lead; }
     if (changes >= 2) { out.push({ icon: "🔄", title: "Title Race Drama", main: changes + " lead changes", detail: "Top spot changed hands " + changes + " times after " + nR + " rounds" }); }
     if (nR >= 4) {
       const mid = Math.floor(nR / 2), pm = pos(mid), pn = pos(nR);
@@ -3588,7 +3691,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
 
   // =============== OVERALL TEAM STATS, TROPHIES, INTROS, RECAP ===============
   let hallMode = false;
-  const HALL_TABS = ["Overall", "Matches", "Goals For", "Goals Against", "Unbeaten", "Clean Sheets", "All-time Boot", "All-time Glove", "Hat-tricks", "Rivalries", "Compare", "Cabinets"];
+  const HALL_TABS = ["Overall", "Matches", "Goals For", "Goals Against", "Unbeaten", "Clean Sheets", "All-time Boot", "All-time Glove", "Hat-tricks", "Rivalries", "Compare", "Cabinets", "Trophy Room"];
   function withSeason(no, fn) {
     const keep = currentSeason;
     function set(n) { currentSeason = n; teams = SEASONS[n].teams; SCHEDULE = SEASONS[n].schedule; filterSeasonData(); }
@@ -3721,7 +3824,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
 
   function pageCabinets() {
     const L = hallData().list.slice().sort(function (x, y) { return y.tr.length - x.tr.length || x.name.localeCompare(y.name); });
-    return "<p class='legend'>Trophies and awards won by every team. Stars show how many times each was won.</p>" + L.map(function (a) {
+    return "<p class='legend'>Trophies and awards won by every team. Stars show how many times each was won. <a class='tl' onclick=\"goTab('Trophy Room')\">Step into the 3D Trophy Room ›</a></p>" + L.map(function (a) {
       return "<div class='card'><h3><span class='badge'>" + esc(initials(a.name)) + "</span> " + esc(a.name) + " <span class='legend'>" + a.tr.length + " " + (a.tr.length === 1 ? "award" : "awards") + "</span></h3>" +
         (a.groups.length ? "<div class='cabinet'>" + a.groups.map(function (g) {
           return "<div class='trophy s" + g.rank + "'><span class='ti'>" + g.icon + "</span><b>" + esc(g.title) + "</b><small>" + g.seasons.map(esc).join(" · ") + "</small><div class='stars'>" + times(g.seasons.length) + "</div></div>";
@@ -3752,7 +3855,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       box("👟", "Golden Boot", sum.boot.length ? sum.boot.map(function (b) { return esc(b.player); }).join(", ") : "-", sum.bootGoals + " goals") +
       (sum.pots ? box("🌟", "Player of the Season", sum.pots.players.map(function (p) { return esc(p.player); }).join(", "), sum.pots.votes + " vote" + (sum.pots.votes === 1 ? "" : "s")) : "") +
       box("⚽", "Goals", goals, n + " matches · " + (n ? (goals / n).toFixed(1) : 0) + " per match") +
-      box("💥", "Biggest win", line(big), "") + box("🔥", "Highest scoring", line(hi), "") + "</div></div>";
+      box("💥", "Biggest win", line(big), "") + box("🔥", "Highest scoring", line(hi), "") + "</div><p>" + ceremonyButton() + "</p></div>";
   }
 
   // 3D pop-up when entering Standings, Golden Boot, or the Playoffs after a season ends
@@ -3787,7 +3890,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
   }
 
   // =============== HOME PAGE ===============
-  const TILE_INFO = { "All-time Boot": "Top scorers by league", "All-time Glove": "Keepers by league", Standings: "League table", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Player Cards": "Rated player cards", Wrapped: "Season story", "Golden Glove": "Keepers & clean sheets", "Player of Season": "Vote for the best", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
+  const TILE_INFO = { "Trophy Room": "3D trophy cabinet", "All-time Boot": "Top scorers by league", "All-time Glove": "Keepers by league", Standings: "League table", News: "Latest stories", Race: "Title & top-6 race", Fixtures: "Every match", Playoffs: "Road to the final", Awards: "Season awards", Transfers: "Deals done", Squads: "Team rosters", Records: "Best & worst", "Golden Boot": "Top scorers", "Player Stats": "Player numbers", "Player Cards": "Rated player cards", Wrapped: "Season story", "Golden Glove": "Keepers & clean sheets", "Player of Season": "Vote for the best", "Hall of Fame": "Past champions", Rules: "How it works", Admin: "Manage league" };
   function goTab(t) { currentTab = t; render(); window.scrollTo(0, 0); }
   function pageHome() {
     const table = buildStandings(), played = getPlayedMatches();
@@ -3828,7 +3931,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       return "<button data-tab='" + t + "' class='" + (t === currentTab ? "on" : "") + "' onclick=\"currentTab='" + t + "';render()\">" + label + "</button>";
     }).join("") + installButton();
     setNav(navHtml);
-    const pages = { Matches: pageMatchesHall, "Clean Sheets": pageCleanHall, "Hat-tricks": pageHatHall, Rivalries: pageRivalries, Compare: pageCompare, "Golden Glove": pageGlove, "Player of Season": pagePots, Overall: pageOverall, "Goals For": pageGoalsFor, "Goals Against": pageGoalsAgainst, Unbeaten: pageUnbeaten, "All-time Boot": pageAllBoot, "All-time Glove": pageAllGlove, Cabinets: pageCabinets, Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Player Cards": pageCards, Wrapped: pageWrapped, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
+    const pages = { Matches: pageMatchesHall, "Clean Sheets": pageCleanHall, "Hat-tricks": pageHatHall, Rivalries: pageRivalries, Compare: pageCompare, "Golden Glove": pageGlove, "Player of Season": pagePots, Overall: pageOverall, "Goals For": pageGoalsFor, "Goals Against": pageGoalsAgainst, Unbeaten: pageUnbeaten, "All-time Boot": pageAllBoot, "All-time Glove": pageAllGlove, "Trophy Room": pageTrophyRoom, Cabinets: pageCabinets, Home: pageHome, Awards: pageAwards, Transfers: pageTransfers, News: pageNews, Race: pageRace, Standings: pageStandings, Fixtures: pageFixtures, Playoffs: pagePlayoffs, Squads: pageSquads, Records: pageRecords, "Golden Boot": pageBoot, "Player Stats": pageStats, "Player Cards": pageCards, Wrapped: pageWrapped, "Hall of Fame": pageHall, Rules: pageRules, Admin: pageAdmin, Team: pageTeam };
     const app = document.getElementById("app");
     app.innerHTML = loaded ? pageHead() + (currentTab === "Standings" ? heroLeader() : "") + pages[currentTab]() : skeleton();
 
@@ -3846,6 +3949,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
     applyLogos(app);
     renderTicker();
     animateCounts();
+    fxAfterRender(entering);
     if (entering && loaded && !hallMode) { introFor(currentTab); }
   }
 
@@ -4629,6 +4733,364 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
   }
 
   // =====================================================================
+  //  MILESTONE ALERTS
+  // =====================================================================
+  var msRound = -1;   // -1 = latest round, "all" = whole season, otherwise a round index
+  const MS = { pSeason: [5, 10, 15, 20, 25, 30, 40, 50], pCareer: [10, 25, 50, 75, 100, 150, 200], tWins: [5, 10, 15, 20, 25, 30], tGoals: [25, 50, 75, 100, 125, 150],
+               tCs: [3, 5, 10, 15], streak: [3, 5, 7, 10], unbeaten: [5, 10, 15], gkCs: [3, 5, 10, 15], gkSaves: [10, 25, 50, 100], lGoals: [25, 50, 100, 150, 200, 250, 300, 400, 500], lMatches: [10, 25, 50, 75, 100] };
+  function msCross(list, prev, now) { let hit = 0; list.forEach(function (t) { if (prev < t && now >= t) { hit = t; } }); return hit; }
+
+  function milestoneList() {
+    const ms = chronoMatches(), out = [];
+    if (!ms.length) { return out; }
+    function add(ri, icon, title, text, team, w) { out.push({ ri: ri, icon: icon, title: title, text: text, team: team || null, w: w || 1 }); }
+    const T = {}, gkc = {}, lg = { goals: 0, matches: 0 };
+    Object.keys(teams).forEach(function (c) { T[c] = { w: 0, gf: 0, cs: 0, streak: 0, unb: 0 }; });
+
+    // ---- team, league and keeper milestones, match by match ----
+    ms.forEach(function (m) {
+      const ri = m.ri;
+      [[m.home, m.hg, m.ag], [m.away, m.ag, m.hg]].forEach(function (x) {
+        const c = x[0], f = x[1], a = x[2], t = T[c], N = teams[c];
+        const pw = t.w, pg = t.gf, pcs = t.cs;
+        t.gf += f; if (a === 0) { t.cs++; }
+        if (f > a) { t.w++; t.streak++; t.unb++; } else if (f === a) { t.streak = 0; t.unb++; } else { t.streak = 0; t.unb = 0; }
+        const w = msCross(MS.tWins, pw, t.w); if (w) { add(ri, "🏅", N + " reach " + w + " wins", N + " have won " + w + " matches this season.", c, 2); }
+        const g = msCross(MS.tGoals, pg, t.gf); if (g) { add(ri, "🥅", N + " hit " + g + " goals", N + " have scored " + g + " goals this season.", c, 2); }
+        const k = msCross(MS.tCs, pcs, t.cs); if (k) { add(ri, "🧱", N + " reach " + k + " clean sheets", N + " have kept " + k + " clean sheets this season.", c, 1); }
+        if (f > a && MS.streak.indexOf(t.streak) !== -1) { add(ri, "🔥", N + ": " + t.streak + " wins in a row", N + " are on a " + t.streak + "-match winning streak.", c, 3); }
+        if (f <= a && t.unb > 0 && MS.unbeaten.indexOf(t.unb) !== -1) { add(ri, "🎯", N + ": " + t.unb + " unbeaten", N + " have gone " + t.unb + " matches without defeat.", c, 2); }
+      });
+      const pg = lg.goals, pm = lg.matches;
+      lg.goals += m.hg + m.ag; lg.matches++;
+      const lgl = msCross(MS.lGoals, pg, lg.goals); if (lgl) { add(ri, "💯", "The league reaches " + lgl + " goals", "Goal number " + lgl + " of the season has been scored.", null, 3); }
+      const lmt = msCross(MS.lMatches, pm, lg.matches); if (lmt) { add(ri, "📅", lmt + " matches played", "The " + lmt + "th match of the season is in the books.", null, 1); }
+      if (m.hg + m.ag >= 7) { add(ri, "🤯", "A " + (m.hg + m.ag) + "-goal game", teams[m.home] + " " + m.hg + "-" + m.ag + " " + teams[m.away] + " is a goal feast.", null, 3); }
+      // keepers
+      gkLog.filter(function (g) { return g.match_ref === m.id; }).forEach(function (g) {
+        const key = g.team + "|" + g.player, o = gkc[key] || (gkc[key] = { cs: 0, sv: 0 }), conceded = g.team === m.home ? m.ag : m.hg, who = cleanPlayer(g.player) + " (" + teams[g.team] + ")";
+        const pcs = o.cs, psv = o.sv;
+        if (conceded === 0) { o.cs++; } o.sv += Number(g.saves) || 0;
+        const c1 = msCross(MS.gkCs, pcs, o.cs); if (c1) { add(ri, "🧤", who + ": " + c1 + " clean sheets", who + " has kept " + c1 + " clean sheets this season.", g.team, 2); }
+        const s1 = msCross(MS.gkSaves, psv, o.sv); if (s1) { add(ri, "🙌", who + ": " + s1 + " saves", who + " has made " + s1 + " saves this season.", g.team, 2); }
+      });
+    });
+
+    // ---- player goals: season, career in this league, hat-tricks ----
+    const lgKey = SEASONS[currentSeason].league === "mini" ? "mini" : "main", before = {};
+    allGoals.forEach(function (g) {
+      const no = g.season || 1;
+      if (no < currentSeason && hallLeagueNos(lgKey).indexOf(no) !== -1) { const k = normName(g.player); before[k] = (before[k] || 0) + g.goals; }
+    });
+    const rounds = {};
+    goalLog.forEach(function (g) { const r = Number(g.round); if (r > 0) { (rounds[r] = rounds[r] || []).push(g); } });
+    const seasonTot = {}, careerTot = {}, hats = {};
+    let firstHat = true;
+    Object.keys(rounds).map(Number).sort(function (a, b) { return a - b; }).forEach(function (r) {
+      const per = {};
+      rounds[r].forEach(function (g) { const k = g.team + "|" + g.player; per[k] = per[k] || { team: g.team, player: g.player, goals: 0 }; per[k].goals += g.goals; });
+      Object.keys(per).forEach(function (k) {
+        const p = per[k], who = p.player + " (" + teams[p.team] + ")", n = normName(p.player);
+        const ps = seasonTot[k] || 0; seasonTot[k] = ps + p.goals;
+        const s1 = msCross(MS.pSeason, ps, seasonTot[k]);
+        if (s1) { add(r - 1, "⚽", who + " reaches " + s1 + " goals", p.player + " has scored " + s1 + " goals for " + teams[p.team] + " this season.", p.team, 3); }
+        const pc = (before[n] || 0) + (careerTot[n] || 0); careerTot[n] = (careerTot[n] || 0) + p.goals;
+        if (before[n]) {
+          const c1 = msCross(MS.pCareer, pc, pc + p.goals);
+          if (c1) { add(r - 1, "💫", p.player + ": " + c1 + " career goals", p.player + " reaches " + c1 + " goals in the " + (lgKey === "mini" ? "Mini League" : "Masters League") + ".", p.team, 4); }
+        }
+        if (p.goals >= 3) {
+          hats[n] = (hats[n] || 0) + 1;
+          if (firstHat) { add(r - 1, "🎩", "First hat-trick of the season", p.player + " (" + teams[p.team] + ") scored " + p.goals + " goals in one round.", p.team, 4); firstHat = false; }
+          else if (hats[n] > 1) { add(r - 1, "🎩", p.player + ": hat-trick number " + hats[n], p.player + " has " + hats[n] + " hat-tricks this season.", p.team, 3); }
+        }
+      });
+    });
+    return out.sort(function (a, b) { return b.ri - a.ri || b.w - a.w || a.title.localeCompare(b.title); });
+  }
+
+  function milestoneSelection() {
+    const all = milestoneList();
+    if (!all.length) { return { all: all, shown: [], rounds: [], sel: msRound }; }
+    const rounds = []; all.forEach(function (x) { if (rounds.indexOf(x.ri) === -1) { rounds.push(x.ri); } });
+    rounds.sort(function (a, b) { return b - a; });
+    const sel = msRound === "all" ? "all" : (rounds.indexOf(msRound) === -1 ? rounds[0] : msRound);
+    return { all: all, rounds: rounds, sel: sel, shown: sel === "all" ? all : all.filter(function (x) { return x.ri === sel; }) };
+  }
+
+  function milestonesHtml() {
+    const S = milestoneSelection();
+    if (!S.all.length) { return ""; }
+    let html = "<div class='card' style='margin-top:16px'><h3>🎯 Milestone alerts <span class='legend'>" + S.shown.length + " this view</span></h3>" +
+      "<select onchange=\"msRound=(this.value==='all'?'all':Number(this.value));render()\"><option value='all'" + (S.sel === "all" ? " selected" : "") + ">Whole season</option>" +
+      S.rounds.map(function (ri) { return "<option value='" + ri + "'" + (ri === S.sel ? " selected" : "") + ">Round " + (ri + 1) + "</option>"; }).join("") + "</select> " + shareBtn("milestones", "Share milestones");
+    let last = null;
+    S.shown.forEach(function (x) {
+      if (S.sel === "all" && x.ri !== last) { html += "<h4 style='margin:14px 0 4px'>Round " + (x.ri + 1) + "</h4>"; last = x.ri; }
+      html += "<div class='tm' style='display:block'><b>" + x.icon + " " + esc(x.title) + "</b><div class='legend'>" + esc(x.text) + "</div></div>";
+    });
+    return html + "</div>";
+  }
+
+  function milestoneBox(id) {
+    const m = chronoMatches().find(function (x) { return x.id === id; });
+    if (!m) { return ""; }
+    const list = milestoneList().filter(function (x) { return x.ri === m.ri && x.team && (x.team === m.home || x.team === m.away); });
+    return list.length ? "<div class='msec'><h4>🎯 Milestones</h4>" + list.slice(0, 5).map(function (x) { return "<div>" + x.icon + " " + esc(x.title) + "</div>"; }).join("") + "</div>" : "";
+  }
+
+  // =====================================================================
+  //  STADIUM NIGHT MODE
+  // =====================================================================
+  function calmMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function nightInit() {
+    if (!document.getElementById("nightFx")) {
+      const fx = document.createElement("div");
+      fx.id = "nightFx"; fx.className = "night-fx";
+      fx.innerHTML = "<div class='ngl'></div><div class='beam l'></div><div class='beam r'></div><div class='nglow'></div>";
+      document.body.appendChild(fx);
+    }
+    let on = false;
+    try { on = localStorage.getItem("night") === "1"; } catch (e) { on = false; }
+    nightApply(on);
+  }
+  function nightApply(on) {
+    document.body.classList.toggle("night", !!on);
+    const b = document.getElementById("nightBtn");
+    if (b) { b.textContent = on ? "☀️ Day" : "🌙 Night"; b.setAttribute("aria-pressed", on ? "true" : "false"); }
+  }
+  function toggleNight() {
+    const on = !document.body.classList.contains("night");
+    nightApply(on);
+    try { localStorage.setItem("night", on ? "1" : "0"); } catch (e) { /* storage not available */ }
+  }
+
+  // =====================================================================
+  //  PULSE TABLE: rows glide to their new places, arrows glow
+  // =====================================================================
+  var pulseDone = false, pulseTimer = 0;
+  function pulseTable() {
+    if (calmMotion()) { return; }
+    const last = lastPlayedRound();
+    if (last < 2) { return; }
+    const prev = tableUpTo(last - 1), rows = Array.prototype.slice.call(document.querySelectorAll("table.st tr[data-code]"));
+    if (!rows.length) { return; }
+    clearTimeout(pulseTimer);
+    const h = rows[0].getBoundingClientRect().height, moved = [];
+    rows.forEach(function (tr, i) {
+      tr.classList.remove("pl-up", "pl-down"); tr.style.transition = "none"; tr.style.transform = "";
+      const p = prev.indexOf(tr.getAttribute("data-code")), d = p - i;
+      if (p < 0 || d === 0) { return; }
+      tr.style.transform = "translateY(" + (d * h) + "px)";
+      tr.classList.add(d > 0 ? "pl-up" : "pl-down");
+      moved.push(tr);
+    });
+    void document.body.offsetWidth;
+    moved.forEach(function (tr) { tr.style.transition = "transform 1.2s cubic-bezier(.2,.8,.2,1)"; tr.style.transform = ""; });
+    pulseTimer = setTimeout(function () { rows.forEach(function (tr) { tr.style.transition = ""; tr.classList.remove("pl-up", "pl-down"); }); }, 3200);
+  }
+
+  // =====================================================================
+  //  3D TROPHY ROOM (Hall of Fame)
+  // =====================================================================
+  var trTeam = "", trState = null, trRaf = 0;
+  function trStop() { if (trRaf) { cancelAnimationFrame(trRaf); trRaf = 0; } trState = null; }
+
+  function trophyRoomList() { return hallData().list.slice().sort(function (x, y) { return y.tr.length - x.tr.length || x.name.localeCompare(y.name); }); }
+
+  function pageTrophyRoom() {
+    const L = trophyRoomList();
+    if (!L.length) { return "<div class='card'><p class='legend'>No teams yet.</p></div>"; }
+    if (!trTeam || !L.some(function (a) { return a.name === trTeam; })) { trTeam = L[0].name; }
+    const a = L.find(function (x) { return x.name === trTeam; });
+    const items = a.groups.length ? a.groups : [{ icon: "❔", title: "Empty cabinet", seasons: ["Awards appear when a league finishes"], rank: 0 }];
+    const N = items.length, step = N <= 4 ? 44 : 360 / N, R = N === 1 ? 0 : Math.max(170, Math.round(N <= 4 ? 190 : N * 50));
+    let html = "<p class='legend'>Walk around the trophy room. Drag to look around, scroll or use + and − to zoom, and pick any club to see its cabinet.</p>" +
+      "<div class='tr-bar'><select onchange=\"trTeam=this.value;render()\">" + L.map(function (x) { return "<option value=\"" + esc(x.name) + "\"" + (x.name === trTeam ? " selected" : "") + ">" + esc(x.name) + " (" + x.tr.length + ")</option>"; }).join("") + "</select>" +
+      "<button class='btn out' onclick='trZoom(-0.12)'>−</button><button class='btn out' onclick='trZoom(0.12)'>+</button><button class='btn out' id='trAutoBtn' onclick='trAuto()'>⏸ Auto-rotate</button></div>";
+    html += "<div class='tr-stage' id='trStage'><div class='tr-room' id='trRoom'><div class='tr-wall'></div><div class='tr-floor'></div><div class='tr-ring' id='trRing'>" +
+      "<div class='tr-disc' style='width:" + (2 * R + 260) + "px;height:" + (2 * R + 260) + "px;margin:-" + (R + 130) + "px 0 0 -" + (R + 130) + "px'></div>" +
+      items.map(function (g, i) {
+        const ang = Math.round((i - (N - 1) / 2) * step * 10) / 10;
+        return "<div class='tr-item' data-i='" + i + "' data-a='" + ang + "' style='transform:rotateY(" + ang + "deg) translateZ(" + R + "px)'><div class='tr-face'><div class='tr-cone'></div>" +
+          "<div class='tr-ico s" + g.rank + "'>" + g.icon + (g.seasons.length > 1 && g.rank ? "<em>×" + g.seasons.length + "</em>" : "") + "</div><div class='tr-ped'></div>" +
+          "<div class='tr-plate'><b>" + esc(g.title) + "</b><small>" + esc(g.seasons.join(" · ")) + "</small></div></div></div>";
+      }).join("") + "</div></div><div class='tr-vig'></div><div class='tr-hint'>↔ Drag to look around</div></div>" +
+      "<div class='card tr-info' id='trInfo'><b>" + esc(a.name) + "</b> · " + a.tr.length + (a.tr.length === 1 ? " award" : " awards") + "</div>";
+    return html;
+  }
+
+  function trInit() {
+    const stage = document.getElementById("trStage"), room = document.getElementById("trRoom"), ring = document.getElementById("trRing");
+    if (!stage || !room || !ring) { return; }
+    const items = Array.prototype.slice.call(ring.querySelectorAll(".tr-item"));
+    const calm = calmMotion();
+    trState = { ry: 0, rx: -9, zoom: 1, vel: calm ? 0 : 0.18, auto: !calm, drag: false, lx: 0, ly: 0, front: -1, items: items };
+    function apply() {
+      const S = trState; if (!S) { return; }
+      ring.style.transform = "rotateY(" + S.ry + "deg)";
+      room.style.transform = "scale(" + S.zoom + ") rotateX(" + S.rx + "deg)";
+      let best = 0, bestD = 999;
+      S.items.forEach(function (it, i) {
+        const a = Number(it.getAttribute("data-a")), eff = a + S.ry, n = ((eff % 360) + 540) % 360 - 180;
+        it.firstChild.style.transform = "rotateY(" + (-eff) + "deg)";
+        if (Math.abs(n) < bestD) { bestD = Math.abs(n); best = i; }
+      });
+      if (best !== S.front) {
+        S.front = best;
+        S.items.forEach(function (it, i) { it.classList.toggle("front", i === best); });
+        const g = S.items[best], info = document.getElementById("trInfo");
+        if (info && g) { const p = g.querySelector(".tr-plate"); info.innerHTML = "<b>" + p.querySelector("b").innerHTML + "</b><div class='legend'>" + p.querySelector("small").innerHTML + "</div>"; }
+      }
+    }
+    function loop() {
+      const S = trState; if (!S) { return; }
+      if (!S.drag) { if (S.auto) { S.ry += S.vel; } else if (Math.abs(S.vel) > 0.01) { S.ry += S.vel; S.vel *= 0.94; } }
+      apply(); trRaf = requestAnimationFrame(loop);
+    }
+    stage.addEventListener("pointerdown", function (e) { const S = trState; if (!S) { return; } S.drag = true; S.lx = e.clientX; S.ly = e.clientY; S.vel = 0; try { stage.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
+    stage.addEventListener("pointermove", function (e) {
+      const S = trState; if (!S || !S.drag) { return; }
+      const dx = e.clientX - S.lx, dy = e.clientY - S.ly; S.lx = e.clientX; S.ly = e.clientY;
+      S.ry += dx * 0.35; S.vel = dx * 0.35; S.rx = Math.max(-28, Math.min(4, S.rx + dy * 0.12));
+    });
+    function up() { const S = trState; if (S) { S.drag = false; if (S.auto) { S.vel = 0.18; } } }
+    stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
+    stage.addEventListener("wheel", function (e) { e.preventDefault(); trZoom(e.deltaY < 0 ? 0.08 : -0.08); }, { passive: false });
+    apply(); if (!calm) { trRaf = requestAnimationFrame(loop); }
+  }
+  function trZoom(d) { if (trState) { trState.zoom = Math.max(0.6, Math.min(1.6, trState.zoom + d)); if (!trRaf) { trRaf = requestAnimationFrame(function () { trRaf = 0; }); } } }
+  function trAuto() {
+    if (!trState) { return; }
+    trState.auto = !trState.auto; trState.vel = trState.auto ? 0.18 : 0;
+    const b = document.getElementById("trAutoBtn"); if (b) { b.textContent = trState.auto ? "⏸ Auto-rotate" : "▶ Auto-rotate"; }
+  }
+  document.addEventListener("keydown", function (e) {
+    if (!trState) { return; }
+    if (e.key === "ArrowLeft") { trState.ry += 12; } else if (e.key === "ArrowRight") { trState.ry -= 12; }
+  });
+
+  // =====================================================================
+  //  SEASON TROPHY CEREMONY
+  // =====================================================================
+  var cerState = null;
+  function cerKey() { return "cer:" + currentSeason; }
+  function ceremonyData() {
+    const sum = seasonSummary(currentSeason), rows = buildStandings(), cfg = SEASONS[currentSeason], top = rows.map(function (r) { return r.code; }), pw = {};
+    allPlayoffs.forEach(function (p) { if ((p.season || 1) === currentSeason) { pw[p.stage] = p.winner; } });
+    function ok(stage, a, b) { const w = pw[stage]; return (a && b && (w === a || w === b)) ? w : null; }
+    const q1w = ok("q1", top[0], top[1]), q1l = q1w ? (q1w === top[0] ? top[1] : top[0]) : null;
+    let el;
+    if (cfg.playoff === "six") { el = ok("el1", ok("ko1", top[2], top[5]), ok("ko2", top[3], top[4])); } else { el = ok("el", top[2], top[3]); }
+    const q2w = ok("q2", q1l, el), q2l = q2w ? (q2w === q1l ? el : q1l) : null;
+    const champ = ok("f", q1w, q2w), runner = champ ? (q1w === champ ? q2w : q1w) : null;
+    const gk = gkAgg([currentSeason]).filter(function (g) { return g.cs > 0; })[0] || null;
+    return { sum: sum, preview: !champ, first: champ || top[0], second: runner || top[1], third: q2l || top[2], rows: rows, gk: gk };
+  }
+  function ceremonyReady() { return loaded && !hallMode && !!seasonSummary(currentSeason).champion; }
+  function ceremonyButton() {
+    if (hallMode) { return ""; }
+    if (ceremonyReady()) { return "<button class='btn' onclick='openCeremony()'>🏆 Play season ceremony</button>"; }
+    return isAdmin ? "<button class='btn out' onclick='openCeremony()'>🎬 Preview ceremony (admin)</button>" : "";
+  }
+
+  function openCeremony() {
+    const D = ceremonyData();
+    if (!D.rows.some(function (r) { return r.played; })) { toast("Play some matches first.", "err"); return; }
+    closeCeremony();
+    try { localStorage.setItem(cerKey(), "1"); } catch (e) { /* ignore */ }
+    const name1 = teams[D.first], club = CLUBS[name1] || { bg: "#c1121f", fg: "#fff" }, calm = calmMotion(), sum = D.sum;
+    const owner = (squads[D.first] && squads[D.first].owner) || "";
+    function crest(code, big) { const nm = teams[code]; const c = CLUBS[nm] || { bg: "#333", fg: "#fff" }; return "<span class='cer-crest" + (big ? " big" : "") + "' style='background:" + c.bg + ";color:" + c.fg + "'>" + esc(initials(nm)) + "</span>"; }
+    const scenes = [];
+    scenes.push({ ms: 3200, html: "<div class='cer-sweep'></div><div class='cer-k'>" + esc(leagueLabel(currentSeason)) + "</div><div class='cer-t cer-in'>" + esc(SEASONS[currentSeason].name) + "<br>complete</div><div class='cer-s cer-in d2'>The final whistle has blown. Time to hand out the silverware.</div>" });
+    scenes.push({ ms: 7000, html: "<div class='cer-k'>The podium</div><div class='cer-pod'>" +
+      [[D.second, 2, "Runners-up"], [D.first, 1, D.preview ? "Leaders" : "Champions"], [D.third, 3, "Third place"]].map(function (x) {
+        return "<div class='pcol p" + x[1] + "'><div class='pwho'>" + crest(x[0], false) + "<b>" + esc(teams[x[0]]) + "</b><small>" + x[2] + "</small></div><div class='pbar'><span>" + x[1] + "</span></div></div>";
+      }).join("") + "</div>" });
+    scenes.push({ ms: 8000, confetti: true, html: "<div class='cer-spot'></div><div class='cer-k'>" + (D.preview ? "League leaders" : "League champions") + "</div><div class='cer-cup'>🏆</div>" +
+      "<div class='cer-crestwrap'>" + crest(D.first, true) + "</div><div class='cer-champ cer-in d3'>" + esc(name1) + "</div>" + (owner ? "<div class='cer-s cer-in d4'>Owner: <b>" + esc(owner) + "</b></div>" : "") });
+    const aw = [];
+    aw.push(["🛡️", "League Shield", D.rows[0].name, D.rows[0].points + " points from " + D.rows[0].played + " matches"]);
+    if (sum.boot.length) { aw.push(["👟", "Golden Boot", sum.boot.map(function (b) { return b.player; }).join(", "), sum.bootGoals + " goals"]); }
+    if (D.gk) { aw.push(["🧤", "Golden Glove", D.gk.player, D.gk.team + " · " + D.gk.cs + " clean sheets"]); }
+    if (sum.pots) { aw.push(["🌟", "Player of the Season", sum.pots.players.map(function (p) { return p.player; }).join(", "), sum.pots.votes + " vote" + (sum.pots.votes === 1 ? "" : "s")]); }
+    scenes.push({ ms: 2000 + aw.length * 1700, html: "<div class='cer-k'>The awards</div><div class='cer-awards'>" + aw.map(function (a, i) {
+      return "<div class='cer-aw " + (i % 2 ? "fromr" : "froml") + "' style='animation-delay:" + (0.3 + i * 1.5) + "s'><span class='ai'>" + a[0] + "</span><div><small>" + esc(a[1]) + "</small><b>" + esc(a[2]) + "</b><div class='legend'>" + esc(a[3]) + "</div></div></div>";
+    }).join("") + "</div>" });
+    scenes.push({ ms: 0, html: "<div class='cer-k'>See you next season</div><div class='cer-crestwrap'>" + crest(D.first, true) + "</div><div class='cer-champ small'>" + esc(name1) + "</div><div class='cer-s'>" + esc(fullName(currentSeason)) + (D.preview ? " · preview" : "") + "</div>" +
+      "<div class='cer-btns'><button onclick='event.stopPropagation();openCeremony()'>↺ Replay</button><button onclick=\"event.stopPropagation();closeCeremony();shareCard('awards')\">📸 Share awards</button><button onclick='event.stopPropagation();closeCeremony()'>Close</button></div>", last: true });
+    const el = document.createElement("div");
+    el.className = "cer"; el.id = "cer";
+    el.style.setProperty("--ck", club.bg); el.style.setProperty("--cf", club.fg);
+    el.innerHTML = "<canvas id='cerCv'></canvas><button class='cer-x' onclick='event.stopPropagation();closeCeremony()'>✕</button><div class='cer-scene' id='cerScene'></div><div class='cer-dots' id='cerDots'></div><div class='cer-hint'>Tap to skip ›</div>";
+    el.addEventListener("click", function () { cerGo(cerState.i + 1); });
+    document.body.appendChild(el);
+    cerState = { scenes: scenes, i: -1, timer: 0, raf: 0, particles: [], calm: calm, colors: [club.bg, club.fg, "#f5b301", "#ffffff", "#ffd966"] };
+    cerGo(0);
+  }
+  function cerGo(i) {
+    const S = cerState; if (!S) { return; }
+    clearTimeout(S.timer);
+    if (i >= S.scenes.length) { return; }
+    S.i = i;
+    const sc = S.scenes[i], box = document.getElementById("cerScene");
+    box.className = "cer-scene" + (S.calm ? " calm" : ""); void box.offsetWidth;
+    box.innerHTML = sc.html;
+    document.getElementById("cerDots").innerHTML = S.scenes.map(function (_, j) { return "<i class='" + (j === i ? "on" : j < i ? "done" : "") + "'></i>"; }).join("");
+    if (sc.confetti && !S.calm) { cerConfetti(); }
+    if (sc.ms) { S.timer = setTimeout(function () { cerGo(i + 1); }, sc.ms); }
+    const hint = document.querySelector("#cer .cer-hint"); if (hint) { hint.style.display = sc.last ? "none" : ""; }
+  }
+  function cerConfetti() {
+    const S = cerState, cv = document.getElementById("cerCv"); if (!S || !cv) { return; }
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    const ctx = cv.getContext("2d");
+    S.particles = [];
+    for (let n = 0; n < 190; n++) {
+      S.particles.push({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * 0.6, vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 4, w: 6 + Math.random() * 8, h: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, c: S.colors[n % S.colors.length] });
+    }
+    const t0 = performance.now();
+    cancelAnimationFrame(S.raf);
+    (function frame(now) {
+      if (!cerState) { return; }
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      const alive = now - t0 < 9000;
+      cerState.particles.forEach(function (p) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.r += p.vr;
+        if (alive && p.y > cv.height + 20) { p.y = -20; p.x = Math.random() * cv.width; p.vy = 2 + Math.random() * 3; }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+      });
+      if (alive || cerState.particles.some(function (p) { return p.y < cv.height; })) { cerState.raf = requestAnimationFrame(frame); }
+    })(t0);
+  }
+  function closeCeremony() {
+    if (cerState) { clearTimeout(cerState.timer); cancelAnimationFrame(cerState.raf); }
+    cerState = null;
+    const el = document.getElementById("cer"); if (el) { el.remove(); }
+  }
+  document.addEventListener("keydown", function (e) {
+    if (!cerState) { return; }
+    if (e.key === "Escape") { closeCeremony(); } else if (e.key === "ArrowRight" || e.key === " ") { cerGo(cerState.i + 1); }
+  });
+  function maybeAutoCeremony() {
+    if (cerState || !ceremonyReady()) { return; }
+    let seen = false;
+    try { seen = localStorage.getItem(cerKey()) === "1"; } catch (e) { seen = true; }
+    if (seen) { return; }
+    setTimeout(function () { if (!cerState && ceremonyReady()) { openCeremony(); } }, 900);
+  }
+
+  function fxAfterRender(entering) {
+    trStop();
+    if (hallMode && currentTab === "Trophy Room") { trInit(); }
+    if (loaded && !hallMode && currentTab === "Standings" && (entering || !pulseDone)) { pulseDone = true; setTimeout(pulseTable, 400); }
+    if (loaded && !hallMode && (currentTab === "Home" || currentTab === "Standings")) { maybeAutoCeremony(); }
+  }
+
+  nightInit();
+
+  // =====================================================================
   //  SHARE CARDS FOR EVERY SECTION (Masters League, Mini League, Hall of Fame)
   // =====================================================================
   const SHARE_OWN = { Standings: 1, Fixtures: 1, Awards: 1, "Player Stats": 1, "Golden Glove": 1, "Golden Boot": 1 };   // these pages already have their own share buttons
@@ -4762,6 +5224,11 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       if (!c.length) { return null; }
       const done = buildStandings().every(function (r) { return r.played === SCHEDULE.length; });
       return { title: "PLAYER OF THE SEASON", sub: nm + (done ? " · Candidates" : " · Early favourites"), rows: c.map(function (x, i) { return cs_stat(i + 1, x.player, x.team, x.team + " · " + x.goals + " goals · " + x.hat + " hat-tricks · " + x.cs + " CS · " + x.potw + " POTW", Math.round(x.score)); }), file: "player-of-season.png", caption: "Player of the Season · " + nm };
+    }
+    if (kind === "milestones") {
+      const S = milestoneSelection();
+      if (!S.shown.length) { return null; }
+      return { title: "MILESTONES", sub: nm + (S.sel === "all" ? " · Whole season" : " · Round " + (S.sel + 1)), rows: S.shown.slice(0, 10).map(function (x) { return cs_award(x.icon, "Round " + (x.ri + 1), x.title, x.text); }), file: "milestones.png", caption: "Milestones · " + nm };
     }
     if (kind === "drama") {
       const d = dramaList();
