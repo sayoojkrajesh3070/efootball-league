@@ -780,6 +780,24 @@ table.st tr.pl-up { --pl:34,197,94; } table.st tr.pl-down { --pl:239,68,68; }
 .cer-crest.logo { background:#fff !important; border-radius:50%; overflow:hidden; } .cer-crest img { width:100%; height:100%; object-fit:contain; padding:14%; box-sizing:border-box; display:block; }
 .badge.wlg { width:min(52vw,220px); height:min(52vw,220px); font-size:70px; background:rgba(255,255,255,.14); border-radius:50%; margin:0 auto; }
 .badge.wlg.logo { background:#fff !important; border-radius:50%; } .badge.wlg img { padding:14%; }
+/* ---------- derby day card ---------- */
+.derby { border-left:5px solid var(--red); background:linear-gradient(120deg,rgba(193,18,31,.18),rgba(29,78,216,.14)),var(--card); }
+.derby .dbk { font:400 28px var(--font-head); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.derby .dbm { display:flex; align-items:center; justify-content:space-around; gap:10px; margin:6px 0 10px; }
+.derby .dbt { display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; flex:1; }
+.derby .dbt b { font:400 22px var(--font-head); text-transform:uppercase; }
+.derby .dbt small { color:var(--muted); font-size:12px; }
+.rh { margin:22px 0 10px; font-family:var(--font-head); font-weight:400; letter-spacing:.5px; text-transform:uppercase; }
+.rset { list-style:none; padding:0; margin:0 0 6px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+.rset li { display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:9px 12px; }
+.rset li span { font-weight:700; } .rset li span.on { color:var(--gold); }
+.rlag { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.rlag li { display:grid; grid-template-columns:104px 1fr; gap:12px; align-items:start; background:var(--soft); border:1px solid var(--line); border-left:4px solid var(--red); border-radius:10px; padding:10px 12px; }
+.rlag li b { font-size:13px; letter-spacing:.3px; } .rlag li span { line-height:1.45; }
+@media (max-width:520px) { .rlag li { grid-template-columns:1fr; gap:4px; } }
+.rbh { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.rbh h2 { margin:0; }
+.rulebox { margin-top:16px; }
 /* ---------- season wrapped ---------- */
 .wr { position:fixed; inset:0; z-index:400; display:flex; flex-direction:column; font-family:var(--font-body); user-select:none; -webkit-user-select:none; animation:fadeIn .25s ease both; }
 .wr .wbars { display:flex; gap:4px; padding:calc(14px + env(safe-area-inset-top,0px)) 14px 0; }
@@ -1829,6 +1847,7 @@ table.st td { position:relative; }
     }
     html += "<button class='" + (po ? "on" : "") + "' onclick=\"currentRound='PO';render()\">Playoffs</button></div>";
     if (po) { return html + playoffFixturesHtml() + summaryButtons(); }
+    html += derbyCardHtml();
     html += "<div class='card'><h3>Round " + (currentRound + 1) + " <span style='color:var(--muted);font-size:13px;font-weight:400'>" +
             (SEASONS[currentSeason].single ? "" : (currentRound < SCHEDULE.length / 2 ? "First leg" : "Second leg")) + "</span></h3>";
     rounds[currentRound].forEach(function (m) {
@@ -2659,7 +2678,8 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
     }
     html += "</div><div class='msec'>" +
       "<button class='btn out' onclick=\"closeOverlay();openTeam('" + found.home + "')\">" + esc(teams[found.home]) + " profile</button> " +
-      "<button class='btn out' onclick=\"closeOverlay();openTeam('" + found.away + "')\">" + esc(teams[found.away]) + " profile</button></div>";
+      "<button class='btn out' onclick=\"closeOverlay();openTeam('" + found.away + "')\">" + esc(teams[found.away]) + " profile</button></div>" +
+      "<div class='msec'><button class='btn' onclick=\"closeOverlay(true);openPoster('" + id + "')\">🎟️ " + (done ? "Result poster" : "Match poster") + "</button></div>";
     return html;
   }
 
@@ -2853,20 +2873,26 @@ const STAGE_NAMES = { q1: "Qualifier 1", ko1: "Knockout 1", ko2: "Knockout 2", e
       "<li><b>League Shield:</b> The team in 1st place after the league stage wins the shield.</li>" +
       "<li><b>Playoffs (IPL format):</b> " + playoffs + " Playoff goals count for player stats and overall records but give no league points.</li>" +
       "<li><b>Results:</b> Both players confirm the score after full time and share a screenshot in the group chat. The admin enters the result on this site.</li>" +
-      "<li><b>Match time:</b> 8 minutes.</li>" +
-      "<li><b>Extra time:</b> No extra time in league matches. Extra time is used only in the playoffs.</li>" +
-      "<li><b>Substitutions:</b> Maximum 5 substitutions, made in a maximum of 3 intervals.</li>" +
-      "<li><b>Player form:</b> Random.</li>" +
-      "<li><b>Injuries:</b> Off.</li>" +
-      "<li><b>Room setup:</b> The home player sets up the room.</li>" +
+      "<li><b>Deadline:</b> 2 days to play each match. A match that is not played by the deadline is recorded as a draw.</li>" +
       "<li><b>Player cards:</b> Only base cards may be used, no other cards. Using any card other than a base card will result in the match being abandoned.</li>" +
-      "<li><b>NB:</b> Round Start time:<b> 8:00PM </b> and Deadline:<b> 7:30PM </b>(Next day). Finish each round of matches before 7.30PM. All matches must be completed by the deadline.</li>" +
       (SEASONS[currentSeason].transfers ? "<li><b>Transfers:</b> Deals between clubs are recorded on the Transfers tab, and both squads are updated.</li>" : "") +
       "<li><b>Golden Glove:</b> The admin records the goalkeeper and saves for each match. Goals conceded and clean sheets come from the score.</li>" +
       "<li><b>Hat-trick:</b> 3 or more goals by one player in one match.</li>" +
       "<li><b>Player of the Week:</b> Picked automatically each round from goals, goalkeeper stats and the team result.</li>" +
       "<li><b>Player of the Season:</b> After the league stage the top 5 performers are suggested automatically. Each team votes once and cannot vote for its own player.</li>" +
-      "<li><b>Disputes:</b> The league admin's decision is final.</li></ol></div>";
+      "<li><b>Disputes:</b> The league admin's decision is final.</li></ol></div>" +
+      rulesBox("⚽ League match settings", "rules_league", "<ul class='rset'>" + RULES_LEAGUE.map(rsetLi).join("") + "</ul><p class='legend'>The home player sets up the room with these settings.</p>") +
+      rulesBox("🏆 Playoff match settings", "rules_playoff", "<ul class='rset'>" + RULES_PLAYOFF.map(rsetLi).join("") + "</ul><p class='legend'>" + RULES_PLAYOFF_NOTE + "</p>") +
+      rulesBox("📶 Lag or disconnected 🛜🐌", "rules_lag", "<ul class='rlag'>" + RULES_LAG.map(function (x) { return "<li><b>" + x[0] + "</b><span>" + x[1] + "</span></li>"; }).join("") + "</ul>");
+  }
+
+  const RULES_LEAGUE = [["Injuries", "ON", 1], ["Time", "8 min"], ["Substitutions", "6"], ["Form", "Random"], ["Smart assist", "OFF"], ["Extra time", "OFF"], ["Penalties", "OFF"], ["Deadline", "2 days · Draw"]];
+  const RULES_PLAYOFF = [["Injuries", "ON", 1], ["Time", "8 min"], ["Substitutions", "6"], ["Form", "Random"], ["Smart assist", "OFF"], ["Extra time", "ON", 1], ["Penalties", "ON", 1], ["Extra time sub", "+1 extra"]];
+  const RULES_PLAYOFF_NOTE = "If the playoff match is level after full time, it goes to extra time and then penalties. Each team gets 1 extra substitution in extra time.";
+  const RULES_LAG = [["0 to 20 min", "Rematch."], ["20 to 45 min", "Continue the remaining time in a new match. Only the score up to 70 min counts."], ["45 to 80 min", "Continue the remaining time in a new match. Only the score up to the 1st half counts."], ["After 80 min", "If one team leads by more than 1 goal, the match ends there. If the score is level or one team leads by 1 goal, play the remaining time in a new match (10 mins only)."]];
+  function rsetLi(x) { return "<li><b>" + x[0] + "</b><span" + (x[2] ? " class='on'" : "") + ">" + x[1] + "</span></li>"; }
+  function rulesBox(title, kind, body) {
+    return "<div class='card rulebox'><div class='rbh'><h2>" + title + "</h2>" + shareBtn(kind, "Share as image") + "</div>" + body + "</div>";
   }
 
   function pageAdmin() {
@@ -3905,6 +3931,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
     h += "<div class='nextbar'><div><small>Next match" + (next ? " · Round " + nextRound : "") + "</small></div>" +
       (next ? "<div class='nm'><b>" + esc(teams[next.home]) + "</b><span class='vsx'>VS</span><b>" + esc(teams[next.away]) + "</b></div>" : "<div class='nm'><b>All fixtures played</b></div>") +
       "<button class='btn out' onclick=\"goTab('Fixtures')\">View all</button></div>";
+    h += derbyCardHtml();
     function cell(v, l) { return "<div><b>" + v + "</b><small>" + l + "</small></div>"; }
     h += "<div class='strip'>" + cell(played.length, "Matches") + cell(goals, "Goals") + cell(played.length ? (goals / played.length).toFixed(1) : "0.0", "Goals / match") + cell(codes.length, "Teams") + "</div>";
     if (fin) { h += recapHtml(sum); }
@@ -4637,9 +4664,12 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
     const logos = await loadLogos();
     const leagueImg = await new Promise(function (res) { const im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = LEAGUE_LOGO; });
     const W = 1080, PAD = 48, HDR = 250, FOOT = 130, GAP = 12;
-    const HT = { match: 112, table: 76, thead: 46, stat: 92, head: 78, award: 116, line: 58 };
+    const HT = { match: 112, table: 76, thead: 46, stat: 92, head: 78, award: 116, line: 58, kv: 84, rule: 120 };
+    const meas = document.createElement("canvas").getContext("2d");
+    meas.font = "600 24px " + BODYF;
+    spec.rows.forEach(function (r) { if (r.t === "rule" && !r.lines) { r.lines = dpWrap(meas, r.text, W - 2 * PAD - 68, 6); r.h = 72 + r.lines.length * 34; } });
     let H = HDR + FOOT;
-    spec.rows.forEach(function (r) { H += HT[r.t] + GAP; });
+    spec.rows.forEach(function (r) { H += (r.h || HT[r.t]) + GAP; });
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d");
     ctx.fillStyle = CARDC.bg; ctx.fillRect(0, 0, W, H);
@@ -4655,7 +4685,7 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
 
     let y = HDR + 6 + GAP + 6;
     spec.rows.forEach(function (r) {
-      const h = HT[r.t], mid = y + h / 2, x0 = PAD, w0 = W - 2 * PAD;
+      const h = r.h || HT[r.t], mid = y + h / 2, x0 = PAD, w0 = W - 2 * PAD;
       ctx.textBaseline = "middle";
       if (r.t === "head") {
         ctx.fillStyle = CARDC.gold; ctx.textAlign = "left"; ctx.font = "400 46px " + HEADF; ctx.fillText(r.text, x0, mid + 4);
@@ -4689,6 +4719,15 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
           ctx.fillStyle = CARDC.text; ctx.textAlign = "left"; cardFont(ctx, r.name, 520, 28, "700", BODYF, 18); ctx.fillText(r.name, x0 + 152, mid - 12);
           ctx.fillStyle = CARDC.muted; cardFont(ctx, r.sub, 520, 20, "600", BODYF, 14); ctx.fillText(r.sub, x0 + 152, mid + 20);
           ctx.fillStyle = "#fff"; ctx.textAlign = "right"; ctx.font = "400 54px " + HEADF; ctx.fillText(String(r.value), x0 + w0 - 30, mid + 3);
+        } else if (r.t === "kv") {
+          ctx.fillStyle = CARDC.text; ctx.textAlign = "left"; ctx.font = "700 30px " + BODYF; ctx.fillText(r.label, x0 + 34, mid);
+          ctx.textAlign = "right"; ctx.fillStyle = r.on ? CARDC.gold : "#fff"; ctx.font = "400 54px " + HEADF; ctx.fillText(r.value, x0 + w0 - 34, mid + 3);
+        } else if (r.t === "rule") {
+          ctx.fillStyle = CARDC.red; ctx.fillRect(x0, y + 10, 6, h - 20);
+          ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+          ctx.fillStyle = CARDC.gold; ctx.font = "700 26px " + BODYF; ctx.fillText(r.label.toUpperCase(), x0 + 34, y + 44);
+          ctx.fillStyle = CARDC.text; ctx.font = "600 24px " + BODYF;
+          r.lines.forEach(function (ln, i) { ctx.fillText(ln, x0 + 34, y + 84 + i * 34); });
         } else if (r.t === "award") {
           ctx.textAlign = "center"; ctx.font = "44px " + BODYF; ctx.fillStyle = "#fff"; ctx.fillText(r.icon, x0 + 60, mid);
           ctx.textAlign = "left"; ctx.fillStyle = CARDC.gold; ctx.font = "700 18px " + BODYF; ctx.fillText(r.title.toUpperCase(), x0 + 118, mid - 30);
@@ -5068,6 +5107,260 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
   }
 
   // =====================================================================
+  //  DERBY DAY POSTERS
+  // =====================================================================
+  function dpFind(id) {
+    let f = null;
+    SCHEDULE.forEach(function (round, ri) {
+      round.forEach(function (code, i) {
+        if ("R" + (ri + 1) + "-" + (i + 1) === id) { const t = code.split("-"); f = { id: id, ri: ri, home: t[0], away: t[1] }; }
+      });
+    });
+    return f;
+  }
+  function dpTrail(form, ch) { let n = 0; for (let i = form.length - 1; i >= 0 && form[i] === ch; i--) { n++; } return n; }
+
+  function dpH2H(nA, nB) {
+    const lg = SEASONS[currentSeason].league === "mini" ? "mini" : "main", list = [];
+    hallLeagueNos(lg).forEach(function (no) {
+      const cfg = SEASONS[no];
+      const cA = Object.keys(cfg.teams).find(function (c) { return cfg.teams[c] === nA; }), cB = Object.keys(cfg.teams).find(function (c) { return cfg.teams[c] === nB; });
+      if (!cA || !cB) { return; }
+      cfg.schedule.forEach(function (round, ri) {
+        round.forEach(function (code, i) {
+          const t = code.split("-");
+          if (!((t[0] === cA && t[1] === cB) || (t[0] === cB && t[1] === cA))) { return; }
+          const id = "R" + (ri + 1) + "-" + (i + 1), row = allResults.find(function (r) { return (r.season || 1) === no && r.id === id; });
+          if (!row || row.home_goals === null || row.home_goals === undefined || row.home_goals === "" || row.away_goals === null || row.away_goals === undefined || row.away_goals === "") { return; }
+          list.push({ season: no, ri: ri, home: cfg.teams[t[0]], away: cfg.teams[t[1]], hg: Number(row.home_goals), ag: Number(row.away_goals) });
+        });
+      });
+    });
+    list.sort(function (a, b) { return a.season - b.season || a.ri - b.ri; });
+    const r = { list: list, wA: 0, wB: 0, d: 0, gA: 0, gB: 0 };
+    list.forEach(function (m) {
+      const ga = m.home === nA ? m.hg : m.ag, gb = m.home === nA ? m.ag : m.hg;
+      r.gA += ga; r.gB += gb;
+      if (ga > gb) { r.wA++; } else if (gb > ga) { r.wB++; } else { r.d++; }
+    });
+    return r;
+  }
+
+  function dpScore(f, rows) {
+    const N = rows.length, pos = {}, pts = {};
+    rows.forEach(function (r, i) { pos[r.code] = i + 1; pts[r.code] = r.points; });
+    let sc = (N - pos[f.home] + 1) + (N - pos[f.away] + 1);
+    sc += Math.max(0, 6 - Math.abs(pts[f.home] - pts[f.away])) * 1.2;
+    if (pos[f.home] <= 3 && pos[f.away] <= 3) { sc += 8; }
+    const q = qualifiers();
+    if (Math.abs(pos[f.home] - q) <= 1 && Math.abs(pos[f.away] - q) <= 1) { sc += 4; }
+    [f.home, f.away].forEach(function (c) { const row = rows.find(function (r) { return r.code === c; }); sc += dpTrail(row.form, "W") * 0.8; });
+    return sc;
+  }
+
+  function dpLabel(f, rows) {
+    const N = rows.length, pos = {}, pts = {}, q = qualifiers();
+    rows.forEach(function (r, i) { pos[r.code] = i + 1; pts[r.code] = r.points; });
+    const a = pos[f.home], b = pos[f.away], diff = Math.abs(pts[f.home] - pts[f.away]), played = lastPlayedRound();
+    if (a <= 2 && b <= 2 && played >= 3 && diff <= 3) { return "TITLE CLASH"; }
+    if (a <= 3 && b <= 3) { return "TOP OF THE TABLE"; }
+    if (Math.abs(a - q) <= 1 && Math.abs(b - q) <= 1) { return "PLAYOFF SIX-POINTER"; }
+    if (a > N - 3 && b > N - 3) { return "BOTTOM BATTLE"; }
+    if (Math.abs(a - b) >= 6) { return "GIANT VS UNDERDOG"; }
+    return "DERBY DAY";
+  }
+
+  function dpNext() {
+    // the biggest fixture of the next round that still has matches to play
+    const rows = buildStandings();
+    const rounds = buildFixtures();
+    for (let ri = 0; ri < rounds.length; ri++) {
+      const open = rounds[ri].filter(function (m) { return !isPlayed(results[m.id]); });
+      if (open.length) {
+        let best = null;
+        open.forEach(function (m) { const s = dpScore(m, rows); if (!best || s > best.s) { best = { m: m, s: s }; } });
+        return { id: best.m.id, ri: ri };
+      }
+    }
+    return null;
+  }
+
+  function dpTagline(info) {
+    const A = info.hName, B = info.aName, seed = hashStr(info.id + "|dp|" + currentSeason), out = [];
+    const hs = dpTrail(info.hForm, "W"), as = dpTrail(info.aForm, "W");
+    if (info.done) { const p = punditReport(info.id); return p ? p.text : ""; }
+    if (info.label === "TITLE CLASH") { out.push(A + " and " + B + " are separated by " + Math.abs(info.hPts - info.aPts) + " point" + (Math.abs(info.hPts - info.aPts) === 1 ? "" : "s") + " at the top. Win and the pressure shifts."); }
+    else if (info.label === "TOP OF THE TABLE") { out.push("Two top-three sides collide. Somebody's perfect week ends here."); }
+    else if (info.label === "PLAYOFF SIX-POINTER") { out.push("A playoff six-pointer. Lose this one and the season gets very tight."); }
+    else if (info.label === "BOTTOM BATTLE") { out.push("Nowhere to hide at the bottom. Both sides need this one badly."); }
+    else if (info.label === "GIANT VS UNDERDOG") { out.push((info.hPos < info.aPos ? A : B) + " are the favourites, but the table never won a match by itself."); }
+    else { out.push(pickOne(["Bragging rights are on the line.", "Two owners, one winner, zero mercy.", "Round " + (info.ri + 1) + " just got spicy."], seed)); }
+    if (hs >= 3) { out.push(A + " arrive on a " + hs + "-match winning run."); }
+    else if (as >= 3) { out.push(B + " arrive on a " + as + "-match winning run."); }
+    else if (info.h2h.list.length) {
+      const last = info.h2h.list[info.h2h.list.length - 1];
+      out.push("Last time: " + last.home + " " + last.hg + "-" + last.ag + " " + last.away + ".");
+    }
+    return out.slice(0, 2).join(" ");
+  }
+
+  function dpInfo(id) {
+    const f = dpFind(id);
+    if (!f) { return null; }
+    const rows = buildStandings(), pos = {}, rowOf = {};
+    rows.forEach(function (r, i) { pos[r.code] = i + 1; rowOf[r.code] = r; });
+    const r = results[id], done = isPlayed(r), hName = teams[f.home], aName = teams[f.away];
+    const info = { id: id, ri: f.ri, home: f.home, away: f.away, hName: hName, aName: aName, done: done, hg: done ? Number(r.h) : null, ag: done ? Number(r.a) : null,
+      hPos: pos[f.home], aPos: pos[f.away], hPts: rowOf[f.home].points, aPts: rowOf[f.away].points, hForm: rowOf[f.home].form.slice(-5), aForm: rowOf[f.away].form.slice(-5),
+      label: dpLabel(f, rows), h2h: dpH2H(hName, aName) };
+    // a finished match is shown as it stood before kick-off? keep it simple: current table
+    info.tagline = dpTagline(info);
+    return info;
+  }
+
+  function dpWrap(ctx, text, maxW, maxLines) {
+    const words = String(text).split(" "), lines = [];
+    let cur = "";
+    words.forEach(function (w) {
+      const t = cur ? cur + " " + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) { lines.push(cur); }
+    if (lines.length > maxLines) { const keep = lines.slice(0, maxLines); keep[maxLines - 1] = keep[maxLines - 1].replace(/[ .,;:!?]*$/, "") + "…"; return keep; }
+    return lines;
+  }
+  function dpDist(a, b) {
+    function rgb(h) { h = String(h).replace("#", ""); if (h.length === 3) { h = h.split("").map(function (c) { return c + c; }).join(""); } return [parseInt(h.slice(0, 2), 16) || 0, parseInt(h.slice(2, 4), 16) || 0, parseInt(h.slice(4, 6), 16) || 0]; }
+    const x = rgb(a), y = rgb(b);
+    return Math.sqrt(Math.pow(x[0] - y[0], 2) + Math.pow(x[1] - y[1], 2) + Math.pow(x[2] - y[2], 2));
+  }
+
+  async function renderPoster(info) {
+    try { await Promise.all([document.fonts.load("48px 'Bebas Neue'"), document.fonts.load("600 24px Montserrat"), document.fonts.load("700 24px Montserrat")]); } catch (e) { /* fonts optional */ }
+    const logos = await loadLogos();
+    const leagueImg = await new Promise(function (res) { const im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = LEAGUE_LOGO; });
+    const W = 1080, H = 1440, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d");
+    const hc = (CLUBS[info.hName] && CLUBS[info.hName].bg) || "#c1121f";
+    let ac = (CLUBS[info.aName] && CLUBS[info.aName].bg) || "#1d4ed8";
+    if (dpDist(hc, ac) < 90) { ac = "#1d4ed8"; if (dpDist(hc, ac) < 90) { ac = "#f5b301"; } }
+
+    // background: two kit-coloured halves split by a diagonal
+    ctx.fillStyle = "#060912"; ctx.fillRect(0, 0, W, H);
+    const gl = ctx.createLinearGradient(0, 0, W * 0.6, H); gl.addColorStop(0, hc); gl.addColorStop(1, "#060912");
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W * 0.6, 0); ctx.lineTo(W * 0.4, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    const gr = ctx.createLinearGradient(W, 0, W * 0.4, H); gr.addColorStop(0, ac); gr.addColorStop(1, "#060912");
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(W * 0.6, 0); ctx.lineTo(W, 0); ctx.lineTo(W, H); ctx.lineTo(W * 0.4, H); ctx.closePath(); ctx.fill();
+    // darken for legibility
+    const dk = ctx.createLinearGradient(0, 0, 0, H); dk.addColorStop(0, "rgba(0,0,0,.55)"); dk.addColorStop(0.4, "rgba(0,0,0,.12)"); dk.addColorStop(0.75, "rgba(0,0,0,.45)"); dk.addColorStop(1, "rgba(0,0,0,.88)");
+    ctx.fillStyle = dk; ctx.fillRect(0, 0, W, H);
+    // stadium light beams
+    [[0, 0], [W, 0]].forEach(function (p, k) {
+      const g = ctx.createLinearGradient(p[0], 0, W / 2, H * 0.7); g.addColorStop(0, "rgba(255,244,200,.22)"); g.addColorStop(1, "rgba(255,244,200,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(p[0], 0); ctx.lineTo(k ? W * 0.45 : W * 0.55, H * 0.75); ctx.lineTo(k ? W * 0.75 : W * 0.25, H * 0.75); ctx.closePath(); ctx.fill();
+    });
+    // glowing diagonal
+    ctx.save(); ctx.shadowColor = "rgba(255,255,255,.9)"; ctx.shadowBlur = 28; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(W * 0.6, 0); ctx.lineTo(W * 0.4, H); ctx.stroke(); ctx.restore();
+
+    // header
+    if (leagueImg) { ctx.drawImage(leagueImg, 44, 34, 110, 110); }
+    ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+    ctx.fillStyle = CARDC.gold; ctx.font = "700 26px " + BODYF; ctx.fillText("EFOOTBALL FRIENDS LEAGUE", 172, 82);
+    ctx.fillStyle = "#fff"; ctx.font = "600 24px " + BODYF; ctx.fillText((SEASONS[currentSeason].league === "mini" ? "Mini League" : "Masters League") + " · " + SEASONS[currentSeason].name + " · Round " + (info.ri + 1), 172, 120);
+
+    // banner
+    ctx.textAlign = "center";
+    const banner = info.done ? "FULL TIME" : info.label;
+    ctx.fillStyle = "#fff"; ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 24;
+    cardFont(ctx, banner, W - 120, 170, "400", HEADF, 70); ctx.fillText(banner, W / 2, 330);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = CARDC.gold; ctx.fillRect(W / 2 - 90, 352, 180, 6);
+    ctx.fillStyle = "#fff"; ctx.font = "700 26px " + BODYF; ctx.fillText(info.done ? "ROUND " + (info.ri + 1) + " RESULT" : "ROUND " + (info.ri + 1) + " · COMING UP", W / 2, 404);
+
+    // crests
+    const cy = 650, R = 185, hx = W * 0.26, ax = W * 0.74;
+    [[hx, info.hName], [ax, info.aName]].forEach(function (x) {
+      ctx.save(); ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 40; ctx.beginPath(); ctx.arc(x[0], cy, R + 12, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.fill(); ctx.restore();
+      cardBadge(ctx, logos, x[1], x[0], cy, R);
+    });
+    // centre: VS diamond or score
+    ctx.save(); ctx.translate(W / 2, cy); ctx.rotate(Math.PI / 4);
+    ctx.shadowColor = "rgba(245,179,1,.8)"; ctx.shadowBlur = 30; ctx.fillStyle = info.done ? "#0b0b0e" : CARDC.gold;
+    const half = info.done ? 100 : 62; ctx.fillRect(-half, -half, half * 2, half * 2); ctx.restore();
+    ctx.fillStyle = info.done ? "#fff" : "#1a1204";
+    if (info.done) { cardFont(ctx, info.hg + " - " + info.ag, 190, 90, "400", HEADF, 50); ctx.fillText(info.hg + " - " + info.ag, W / 2, cy + 30); }
+    else { ctx.font = "400 78px " + HEADF; ctx.fillText("VS", W / 2, cy + 27); }
+
+    // names, positions, form
+    [[hx, info.hName, info.hPos, info.hPts, info.hForm], [ax, info.aName, info.aPos, info.aPts, info.aForm]].forEach(function (x) {
+      ctx.fillStyle = "#fff"; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 14;
+      cardFont(ctx, x[1].toUpperCase(), 430, 66, "400", HEADF, 34); ctx.fillText(x[1].toUpperCase(), x[0], 905);
+      ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "700 26px " + BODYF; ctx.fillText("#" + x[2] + " · " + x[3] + " PTS", x[0], 950);
+      const fm = x[4], gap = 46, start = x[0] - (Math.max(fm.length, 1) - 1) * gap / 2;
+      if (!fm.length) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.font = "600 22px " + BODYF; ctx.fillText("NO FORM YET", x[0], 1008); }
+      fm.forEach(function (ch, i) {
+        ctx.beginPath(); ctx.arc(start + i * gap, 1004, 19, 0, Math.PI * 2);
+        ctx.fillStyle = ch === "W" ? "#22c55e" : ch === "D" ? "#94a3b8" : "#ef4444"; ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.font = "700 18px " + BODYF; ctx.textBaseline = "middle"; ctx.fillText(ch, start + i * gap, 1005); ctx.textBaseline = "alphabetic";
+      });
+    });
+
+    // head to head panel
+    const py = 1060, ph = 150;
+    ctx.fillStyle = "rgba(6,9,18,.78)"; ctx.strokeStyle = "rgba(255,255,255,.18)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(60, py, W - 120, ph, 22) : ctx.rect(60, py, W - 120, ph); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = CARDC.gold; ctx.font = "700 22px " + BODYF; ctx.fillText("HEAD TO HEAD", W / 2, py + 38);
+    const h2 = info.h2h;
+    if (h2.list.length) {
+      ctx.fillStyle = "#fff"; ctx.font = "400 56px " + HEADF;
+      ctx.fillText(initials(info.hName) + "  " + h2.wA + "W  ·  " + h2.d + "D  ·  " + h2.wB + "W  " + initials(info.aName), W / 2, py + 96);
+      const last = h2.list[h2.list.length - 1];
+      ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = "600 22px " + BODYF;
+      ctx.fillText(h2.list.length + " meeting" + (h2.list.length === 1 ? "" : "s") + " · last: " + last.home + " " + last.hg + "-" + last.ag + " " + last.away, W / 2, py + 130);
+    } else {
+      ctx.fillStyle = "#fff"; ctx.font = "400 48px " + HEADF; ctx.fillText("FIRST MEETING", W / 2, py + 92);
+      ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = "600 22px " + BODYF; ctx.fillText("No history yet. It starts here.", W / 2, py + 128);
+    }
+
+    // tagline
+    ctx.fillStyle = "#fff"; ctx.font = "italic 600 30px " + BODYF;
+    const lines = dpWrap(ctx, info.tagline || "", W - 180, 2);
+    lines.forEach(function (ln, i) { ctx.fillText(ln, W / 2, 1272 + i * 42); });
+
+    // footer
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, H - 84, W, 84);
+    ctx.fillStyle = CARDC.red; ctx.fillRect(0, H - 84, W, 4);
+    if (leagueImg) { ctx.drawImage(leagueImg, 44, H - 76, 68, 68); ctx.drawImage(leagueImg, W - 112, H - 76, 68, 68); }
+    ctx.fillStyle = "#fff"; ctx.font = "400 40px " + HEADF; ctx.fillText("EFOOTBALL FRIENDS LEAGUE", W / 2, H - 36);
+    ctx.fillStyle = CARDC.muted; ctx.font = "600 18px " + BODYF; ctx.fillText(location.host + location.pathname.replace(/index\.html$/, ""), W / 2, H - 12);
+    return cv;
+  }
+
+  async function openPoster(id) {
+    const info = dpInfo(id);
+    if (!info) { toast("Match not found.", "err"); return; }
+    toast("Building poster…");
+    try {
+      const cv = await renderPoster(info);
+      showCardModal(cv, "match-poster-" + id + ".png", (info.done ? "Full time: " : info.label + ": ") + info.hName + " vs " + info.aName + " · " + SEASONS[currentSeason].name + " round " + (info.ri + 1));
+    } catch (e) { toast("Could not build the poster: " + e.message, "err"); }
+  }
+
+  function derbyCardHtml() {
+    const nx = dpNext();
+    if (!nx) { return ""; }
+    const info = dpInfo(nx.id);
+    return "<div class='card derby'><div class='dbk'>🔥 " + esc(info.label) + " <span class='legend'>Round " + (info.ri + 1) + "</span></div>" +
+      "<div class='dbm'><span class='dbt'><span class='badge big'>" + esc(initials(info.hName)) + "</span><b>" + esc(info.hName) + "</b><small>#" + info.hPos + " · " + info.hPts + " pts</small></span>" +
+      "<span class='vsx'>VS</span>" +
+      "<span class='dbt'><span class='badge big'>" + esc(initials(info.aName)) + "</span><b>" + esc(info.aName) + "</b><small>#" + info.aPos + " · " + info.aPts + " pts</small></span></div>" +
+      "<p class='legend'>" + esc(info.tagline) + "</p>" +
+      "<p><button class='btn' onclick=\"openPoster('" + nx.id + "')\">🎟️ Make the match poster</button> <button class='btn out' onclick=\"openMatch('" + nx.id + "')\">Match details</button></p></div>";
+  }
+
+  // =====================================================================
   //  SHARE CARDS FOR EVERY SECTION (Masters League, Mini League, Hall of Fame)
   // =====================================================================
   const SHARE_OWN = { Standings: 1, Fixtures: 1, Awards: 1, "Player Stats": 1, "Golden Glove": 1, "Golden Boot": 1 };   // these pages already have their own share buttons
@@ -5201,6 +5494,16 @@ function toggleFull(b) { b.nextElementSibling.querySelector("table").classList.t
       if (!c.length) { return null; }
       const done = buildStandings().every(function (r) { return r.played === SCHEDULE.length; });
       return { title: "PLAYER OF THE SEASON", sub: nm + (done ? " · Candidates" : " · Early favourites"), rows: c.map(function (x, i) { return cs_stat(i + 1, x.player, x.team, x.team + " · " + x.goals + " goals · " + x.hat + " hat-tricks · " + x.cs + " CS · " + x.potw + " POTW", Math.round(x.score)); }), file: "player-of-season.png", caption: "Player of the Season · " + nm };
+    }
+    if (kind === "rules_league" || kind === "rules_playoff" || kind === "rules_lag") {
+      const sub = mode + " · " + SEASONS[currentSeason].name + " rules";
+      if (kind === "rules_lag") {
+        return { title: "LAG OR DISCONNECTED", sub: sub, rows: RULES_LAG.map(function (x) { return { t: "rule", label: x[0], text: x[1] }; }), file: "rules-lag.png", caption: "Lag or disconnected rules · " + mode };
+      }
+      const data = kind === "rules_league" ? RULES_LEAGUE : RULES_PLAYOFF;
+      const rows = data.map(function (x) { return { t: "kv", label: x[0], value: x[1], on: !!x[2] }; });
+      (kind === "rules_league" ? ["The home player sets up the room with these settings."] : RULES_PLAYOFF_NOTE.split(". ").map(function (t) { return t.replace(/\.$/, "") + "."; })).forEach(function (t) { rows.push({ t: "line", text: t }); });
+      return { title: kind === "rules_league" ? "LEAGUE MATCH SETTINGS" : "PLAYOFF MATCH SETTINGS", sub: sub, rows: rows, file: kind.replace("_", "-") + ".png", caption: (kind === "rules_league" ? "League" : "Playoff") + " match settings · " + mode };
     }
     if (kind === "milestones") {
       const S = milestoneSelection();
